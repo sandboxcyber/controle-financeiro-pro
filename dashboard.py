@@ -1,5 +1,6 @@
 import ttkbootstrap as ttk
 
+from banco import buscar_resumo
 
 def criar_card(pai, titulo, valor):
     card = ttk.Frame(pai, padding=20)
@@ -19,6 +20,7 @@ def criar_card(pai, titulo, valor):
 
 
 def iniciar():
+    saldo, receitas, despesas = buscar_resumo()
     app = ttk.Window(themename="darkly")
     app.title("FinMaster PRO")
     app.geometry("1200x700")
@@ -70,9 +72,9 @@ def iniciar():
     cards = ttk.Frame(conteudo)
     cards.pack(pady=10)
 
-    criar_card(cards, "💰 Saldo Total", "R$ 0,00")
-    criar_card(cards, "📈 Receitas", "R$ 0,00")
-    criar_card(cards, "📉 Despesas", "R$ 0,00")
+    criar_card(cards, "💰 Saldo Total", f"R$ {saldo:.2f}")
+    criar_card(cards, "📈 Receitas", f"R$ {receitas:.2f}")
+    criar_card(cards, "📉 Despesas", f"R$ {despesas:.2f}")
 
     area = ttk.LabelFrame(conteudo, text="Últimas movimentações")
     area.pack(fill="both", expand=True, padx=20, pady=30)
