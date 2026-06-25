@@ -90,10 +90,10 @@ def excluir_movimentacao():
     atualizar_resumo()
 
 janela = tk.Tk()
-janela.title("Controle Financeiro PRO")
+janela.title("FinMaster PRO")
 janela.geometry("900x600")
 
-titulo = tk.Label(janela, text="Controle Financeiro PRO", font=("Arial", 22, "bold"))
+titulo = tk.Label(janela, text="FinMaster PRO", font=("Arial", 22, "bold"))
 titulo.pack(pady=10)
 
 frame_form = tk.Frame(janela)
