@@ -4,7 +4,7 @@ from tkinter import messagebox
 from banco import adicionar_movimentacao
 
 
-def abrir_movimentacoes():
+def abrir_movimentacoes(janela_principal=None):
     janela = ttk.Toplevel()
     janela.title("Nova Receita")
     janela.geometry("600x450")
@@ -48,7 +48,11 @@ def abrir_movimentacoes():
             )
 
             messagebox.showinfo("Sucesso", "Receita salva com sucesso!")
+
             janela.destroy()
+
+            if janela_principal:
+                janela_principal.destroy()
 
         except ValueError:
             messagebox.showerror("Erro", "Digite um valor válido.")

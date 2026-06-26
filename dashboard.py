@@ -26,7 +26,7 @@ def iniciar():
     ttk.Label(menu, text="FinMaster", font=("Segoe UI", 20, "bold")).pack(pady=25)
 
     ttk.Button(menu, text="🏠 Dashboard").pack(fill="x", padx=10, pady=6)
-    ttk.Button(menu, text="💰 Receitas", command=abrir_movimentacoes).pack(fill="x", padx=10, pady=6)
+    ttk.Button(menu, text="💰 Receitas", command=lambda: abrir_movimentacoes(app)).pack(fill="x", padx=10, pady=6)
     ttk.Button(menu, text="💸 Despesas").pack(fill="x", padx=10, pady=6)
     ttk.Button(menu, text="📊 Relatórios").pack(fill="x", padx=10, pady=6)
     ttk.Button(menu, text="⚙️ Configurações").pack(fill="x", padx=10, pady=6)
