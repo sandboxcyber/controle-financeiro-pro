@@ -52,11 +52,34 @@ def iniciar():
     area = ttk.LabelFrame(conteudo, text="Últimas movimentações")
     area.pack(fill="both", expand=True, padx=20, pady=30)
 
-    ttk.Label(
+    colunas = ("Data", "Tipo", "Categoria", "Descrição", "Valor")
+
+    tabela = ttk.Treeview(
         area,
-        text="Nenhuma movimentação cadastrada ainda.",
-        font=("Segoe UI", 12)
-    ).pack(pady=40)
+        columns=colunas,
+        show="headings"
+    )
+
+    for coluna in colunas:
+        tabela.heading(coluna, text=coluna)
+        tabela.column(coluna, width=150)
+
+    tabela.pack(fill="both", expand=True, padx=10, pady=10)
+
+    for movimentacao in movimentacoes:
+        data, tipo, categoria, descricao, valor = movimentacao
+
+        tabela.insert(
+            "",
+            "end",
+            values=(
+                data,
+                tipo,
+                categoria,
+                descricao,
+                f"R$ {valor:.2f}"
+            )
+        )
 
     app.mainloop()
 
