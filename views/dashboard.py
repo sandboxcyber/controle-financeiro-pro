@@ -1,7 +1,7 @@
 import ttkbootstrap as ttk
 
 from banco import buscar_resumo, buscar_movimentacoes
-from movimentacoes import abrir_movimentacoes
+from views.movimentacoes import abrir_movimentacoes
 
 
 def criar_card(pai, titulo, valor):
