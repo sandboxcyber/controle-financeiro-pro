@@ -2,6 +2,8 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 from datetime import datetime
+from estilos import *
+
 
 conexao = sqlite3.connect("financeiro.db")
 cursor = conexao.cursor()
@@ -90,12 +92,17 @@ def excluir_movimentacao():
     atualizar_resumo()
 
 janela = tk.Tk()
+janela.configure(bg=COR_FUNDO)
 janela.title("FinMaster PRO")
 janela.geometry("900x600")
 
-titulo = tk.Label(janela, text="FinMaster PRO", font=("Arial", 22, "bold"))
+titulo = tk.Label(
+    janela,
+    text="FinMaster PRO",
+    font=FONTE_TITULO,
+    bg=COR_FUNDO,
+    fg=COR_TEXTO  )
 titulo.pack(pady=10)
-
 frame_form = tk.Frame(janela)
 frame_form.pack(pady=10)
 
