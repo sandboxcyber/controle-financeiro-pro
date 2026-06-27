@@ -14,7 +14,7 @@ def limpar_frame(frame):
 def iniciar():
     app = ttk.Window(themename="darkly")
     app.title("FinMaster PRO")
-    app.geometry("1200x700")
+    app.geometry("1200x800")
 
     menu = ttk.Frame(app, width=250)
     menu.pack(side="left", fill="y", padx=10, pady=10)
@@ -39,7 +39,7 @@ def iniciar():
         ttk.Label(conteudo, text="Dashboard", font=("Segoe UI", 28, "bold")).pack(pady=30)
 
         criar_cards(conteudo, saldo, receitas, despesas)
-        criar_tabela(conteudo, movimentacoes)
+        criar_tabela(conteudo, movimentacoes, atualizar_dashboard)
 
     ttk.Button(menu, text="🏠 Dashboard", command=atualizar_dashboard).pack(fill="x", padx=10, pady=6)
 
