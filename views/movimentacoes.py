@@ -4,15 +4,14 @@ from tkinter import messagebox
 
 from banco import adicionar_movimentacao
 
-
-def abrir_movimentacoes(ao_salvar=None):
+def abrir_movimentacoes(ao_salvar=None, tipo="Receita"):
     janela = ttk.Toplevel()
-    janela.title("Nova Receita")
+    janela.title(f"Nova {tipo}")
     janela.geometry("600x450")
 
     ttk.Label(
         janela,
-        text="Nova Receita",
+        text=f"Nova {tipo}",
         font=("Segoe UI", 22, "bold")
     ).pack(pady=20)
 
@@ -42,7 +41,7 @@ def abrir_movimentacoes(ao_salvar=None):
 
             adicionar_movimentacao(
                 entrada_data.get(),
-                "Receita",
+                tipo,
                 entrada_categoria.get(),
                 entrada_descricao.get(),
                 valor
@@ -50,7 +49,7 @@ def abrir_movimentacoes(ao_salvar=None):
 
             messagebox.showinfo(
                 "Sucesso",
-                "Receita salva com sucesso!"
+                f"{tipo} salva com sucesso!"
             )
 
             # Atualiza o dashboard, se existir uma função de atualização
@@ -68,7 +67,7 @@ def abrir_movimentacoes(ao_salvar=None):
 
     ttk.Button(
         janela,
-        text="Salvar Receita",
+        text=f"Salvar {tipo}",
         command=salvar
     ).pack(pady=20)
 
