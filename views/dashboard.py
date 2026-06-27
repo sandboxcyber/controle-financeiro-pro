@@ -3,6 +3,7 @@ import ttkbootstrap as ttk
 from banco import buscar_resumo, buscar_movimentacoes
 from views.movimentacoes import abrir_movimentacoes
 from components.cards import criar_cards
+from components.tabela import criar_tabela
 
 def iniciar():
     saldo, receitas, despesas = buscar_resumo()
@@ -36,37 +37,8 @@ def iniciar():
 
     criar_cards(conteudo, saldo, receitas, despesas)
 
-    area = ttk.LabelFrame(conteudo, text="Últimas movimentações")
-    area.pack(fill="both", expand=True, padx=20, pady=30)
+    criar_tabela(conteudo, movimentacoes)
 
-    colunas = ("Data", "Tipo", "Categoria", "Descrição", "Valor")
-
-    tabela = ttk.Treeview(
-        area,
-        columns=colunas,
-        show="headings"
-    )
-
-    for coluna in colunas:
-        tabela.heading(coluna, text=coluna)
-        tabela.column(coluna, width=150)
-
-    tabela.pack(fill="both", expand=True, padx=10, pady=10)
-
-    for movimentacao in movimentacoes:
-        data, tipo, categoria, descricao, valor = movimentacao
-
-        tabela.insert(
-            "",
-            "end",
-            values=(
-                data,
-                tipo,
-                categoria,
-                descricao,
-                f"R$ {valor:.2f}"
-            )
-        )
 
     app.mainloop()
 
