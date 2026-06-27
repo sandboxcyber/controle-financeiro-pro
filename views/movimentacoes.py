@@ -1,10 +1,11 @@
 import ttkbootstrap as ttk
 from datetime import datetime
 from tkinter import messagebox
+
 from banco import adicionar_movimentacao
 
 
-def abrir_movimentacoes(janela_principal=None):
+def abrir_movimentacoes(ao_salvar=None):
     janela = ttk.Toplevel()
     janela.title("Nova Receita")
     janela.geometry("600x450")
@@ -47,15 +48,23 @@ def abrir_movimentacoes(janela_principal=None):
                 valor
             )
 
-            messagebox.showinfo("Sucesso", "Receita salva com sucesso!")
+            messagebox.showinfo(
+                "Sucesso",
+                "Receita salva com sucesso!"
+            )
 
+            # Atualiza o dashboard, se existir uma função de atualização
+            if ao_salvar:
+                ao_salvar()
+
+            # Fecha apenas esta janela
             janela.destroy()
 
-            if janela_principal:
-                janela_principal.destroy()
-
         except ValueError:
-            messagebox.showerror("Erro", "Digite um valor válido.")
+            messagebox.showerror(
+                "Erro",
+                "Digite um valor válido."
+            )
 
     ttk.Button(
         janela,

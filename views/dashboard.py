@@ -2,15 +2,7 @@ import ttkbootstrap as ttk
 
 from banco import buscar_resumo, buscar_movimentacoes
 from views.movimentacoes import abrir_movimentacoes
-
-
-def criar_card(pai, titulo, valor):
-    card = ttk.Frame(pai, padding=20)
-    card.pack(side="left", padx=15)
-
-    ttk.Label(card, text=titulo, font=("Segoe UI", 13, "bold")).pack()
-    ttk.Label(card, text=valor, font=("Segoe UI", 22, "bold")).pack(pady=10)
-
+from components.cards import criar_cards
 
 def iniciar():
     saldo, receitas, despesas = buscar_resumo()
@@ -42,12 +34,7 @@ def iniciar():
 
     ttk.Label(conteudo, text="Dashboard", font=("Segoe UI", 28, "bold")).pack(pady=30)
 
-    cards = ttk.Frame(conteudo)
-    cards.pack(pady=10)
-
-    criar_card(cards, "💰 Saldo Total", f"R$ {saldo:.2f}")
-    criar_card(cards, "📈 Receitas", f"R$ {receitas:.2f}")
-    criar_card(cards, "📉 Despesas", f"R$ {despesas:.2f}")
+    criar_cards(conteudo, saldo, receitas, despesas)
 
     area = ttk.LabelFrame(conteudo, text="Últimas movimentações")
     area.pack(fill="both", expand=True, padx=20, pady=30)
