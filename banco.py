@@ -28,7 +28,7 @@ def buscar_movimentacoes(limite=10):
     cursor = conexao.cursor()
 
     cursor.execute("""
-        SELECT data, tipo, categoria, descricao, valor
+        SELECT id, data, tipo, categoria, descricao, valor
         FROM movimentacoes
         ORDER BY id DESC
         LIMIT ?
@@ -66,6 +66,58 @@ def excluir_movimentacao(data, tipo, categoria, descricao, valor):
         AND valor=?
         LIMIT 1
     """, (data, tipo, categoria, descricao, valor))
+
+    conexao.commit()
+    conexao.close()
+
+def excluir_movimentacao_por_id(id_movimentacao):
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute(
+        "DELETE FROM movimentacoes WHERE id = ?",
+        (id_movimentacao,)
+    )
+
+    conexao.commit()
+    conexao.close()   
+
+def buscar_movimentacao_por_id(id_movimentacao):
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        SELECT id, data, tipo, categoria, descricao, valor
+        FROM movimentacoes
+        WHERE id = ?
+    """, (id_movimentacao,))
+
+    dados = cursor.fetchone()
+
+    conexao.close()
+
+    return dados    
+
+def atualizar_movimentacao(id_movimentacao, data, tipo, categoria, descricao, valor):
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        UPDATE movimentacoes
+        SET data = ?,
+            tipo = ?,
+            categoria = ?,
+            descricao = ?,
+            valor = ?
+        WHERE id = ?
+    """, (
+        data,
+        tipo,
+        categoria,
+        descricao,
+        valor,
+        id_movimentacao
+    ))
 
     conexao.commit()
     conexao.close()

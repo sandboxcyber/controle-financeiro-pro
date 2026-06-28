@@ -1,7 +1,8 @@
 import ttkbootstrap as ttk
 from tkinter import messagebox
 
-from banco import excluir_movimentacao
+from banco import excluir_movimentacao_por_id, buscar_movimentacao_por_id
+from views.movimentacoes import abrir_movimentacoes
 
 
 def criar_tabela(pai, movimentacoes, ao_excluir=None):
@@ -11,7 +12,7 @@ def criar_tabela(pai, movimentacoes, ao_excluir=None):
     barra = ttk.Frame(area)
     barra.pack(fill="x", padx=10, pady=10)
 
-    colunas = ("Data", "Tipo", "Categoria", "Descrição", "Valor")
+    colunas = ("ID", "Data", "Tipo", "Categoria", "Descrição", "Valor")
 
     tabela = ttk.Treeview(
         area,
@@ -34,17 +35,25 @@ def criar_tabela(pai, movimentacoes, ao_excluir=None):
             return
 
         valores = tabela.item(selecionado[0], "values")
+        id_movimentacao = int(valores[0])
 
-        data = valores[0]
-        tipo = valores[1]
-        categoria = valores[2]
-        descricao = valores[3]
-        valor = float(valores[4].replace("R$ ", "").replace(",", "."))
-
-        excluir_movimentacao(data, tipo, categoria, descricao, valor)
+        excluir_movimentacao_por_id(id_movimentacao)
 
         if ao_excluir:
             ao_excluir()
+
+    def editar(event):
+        selecionado = tabela.selection()
+
+        if not selecionado:
+            return
+
+        valores = tabela.item(selecionado[0], "values")
+        id_movimentacao = int(valores[0])
+
+        dados = buscar_movimentacao_por_id(id_movimentacao)
+
+        abrir_movimentacoes(ao_excluir, dados_edicao=dados)
 
     ttk.Button(
         barra,
@@ -53,12 +62,13 @@ def criar_tabela(pai, movimentacoes, ao_excluir=None):
     ).pack(side="right")
 
     for movimentacao in movimentacoes:
-        data, tipo, categoria, descricao, valor = movimentacao
+        id_mov, data, tipo, categoria, descricao, valor = movimentacao
 
         tabela.insert(
             "",
             "end",
             values=(
+                id_mov,
                 data,
                 tipo,
                 categoria,
@@ -66,5 +76,7 @@ def criar_tabela(pai, movimentacoes, ao_excluir=None):
                 f"R$ {valor:.2f}"
             )
         )
+
+    tabela.bind("<Double-1>", editar)
 
     return tabela
