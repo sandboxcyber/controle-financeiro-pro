@@ -28,6 +28,7 @@ class FinMaster(QMainWindow):
         self.resize(1400, 900)
 
         self.configurar_cabecalho()
+        self.configurar_menu()
         self.carregar_dados()
 
         self.timer = QTimer()
@@ -42,6 +43,26 @@ class FinMaster(QMainWindow):
         agora = datetime.now()
         texto = agora.strftime("FinMaster PRO ERP • %d/%m/%Y • %H:%M:%S")
         self.tela.chartPlaceholder.setText(texto)
+
+    def configurar_menu(self):
+        self.tela.btnDashboard.clicked.connect(self.mostrar_dashboard)
+        self.tela.btnFinanceiro.clicked.connect(lambda: self.mostrar_tela("💰 Financeiro", "Módulo financeiro em construção."))
+        self.tela.btnClientes.clicked.connect(lambda: self.mostrar_tela("👥 Clientes", "Cadastro de clientes em construção."))
+        self.tela.btnFornecedores.clicked.connect(lambda: self.mostrar_tela("🚚 Fornecedores", "Cadastro de fornecedores em construção."))
+        self.tela.btnEstoque.clicked.connect(lambda: self.mostrar_tela("📦 Estoque", "Controle de estoque em construção."))
+        self.tela.btnVendas.clicked.connect(lambda: self.mostrar_tela("🛒 Vendas", "Módulo de vendas em construção."))
+        self.tela.btnRelatorios.clicked.connect(lambda: self.mostrar_tela("📊 Relatórios", "Relatórios em construção."))
+        self.tela.btnConfiguracoes.clicked.connect(lambda: self.mostrar_tela("⚙️ Configurações", "Configurações em construção."))
+
+    def mostrar_dashboard(self):
+        self.tela.titleLabel.setText("Olá, Diego 👋")
+        self.tela.chartTitle.setText("Evolução Financeira")
+        self.carregar_dados()
+
+    def mostrar_tela(self, titulo, mensagem):
+        self.tela.titleLabel.setText(titulo)
+        self.tela.chartTitle.setText(mensagem)
+        self.tela.chartPlaceholder.setText("Em breve este módulo terá recursos completos.")
 
     def carregar_dados(self):
         saldo, receitas, despesas = buscar_resumo()
