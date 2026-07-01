@@ -18,7 +18,7 @@ def criar_tabela(pai, movimentacoes, ao_excluir=None):
         area,
         columns=colunas,
         show="headings",
-        height=10
+        height=5
     )
 
     for coluna in colunas:

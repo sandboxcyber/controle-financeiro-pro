@@ -4,7 +4,7 @@ from banco import buscar_resumo, buscar_movimentacoes
 from views.movimentacoes import abrir_movimentacoes
 from components.cards import criar_cards
 from components.tabela import criar_tabela
-
+from components.grafico import criar_grafico_resumo
 
 def limpar_frame(frame):
     for widget in frame.winfo_children():
@@ -39,7 +39,9 @@ def iniciar():
         ttk.Label(conteudo, text="Dashboard", font=("Segoe UI", 28, "bold")).pack(pady=30)
 
         criar_cards(conteudo, saldo, receitas, despesas)
+        criar_grafico_resumo(conteudo, receitas, despesas)
         criar_tabela(conteudo, movimentacoes, atualizar_dashboard)
+        
 
     ttk.Button(menu, text="🏠 Dashboard", command=atualizar_dashboard).pack(fill="x", padx=10, pady=6)
 
