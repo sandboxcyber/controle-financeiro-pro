@@ -1,105 +1,60 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QPushButton, QLabel, QFrame
-from PySide6.QtCore import Qt
 import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtCore import QFile
 
-from banco import buscar_resumo
+from banco import buscar_resumo, buscar_movimentacoes
+
+
+def formatar_moeda(valor):
+    return f"R$ {valor:.2f}".replace(".", ",")
+
 
 class FinMaster(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        loader = QUiLoader()
+        arquivo_ui = QFile("app/ui/dashboard.ui")
+        arquivo_ui.open(QFile.ReadOnly)
+
+        self.tela = loader.load(arquivo_ui)
+        arquivo_ui.close()
+
+        self.setCentralWidget(self.tela.centralWidget())
         self.setWindowTitle("FinMaster PRO ERP")
         self.resize(1400, 900)
 
-        central = QWidget()
-        self.setCentralWidget(central)
+        self.carregar_dados()
 
-        layout_principal = QHBoxLayout(central)
-
-        menu = QFrame()
-        menu.setFixedWidth(240)
-        menu.setStyleSheet("background-color: #111827;")
-
-        menu_layout = QVBoxLayout(menu)
-
-        titulo_menu = QLabel("FinMaster")
-        titulo_menu.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
-        titulo_menu.setAlignment(Qt.AlignCenter)
-
-        menu_layout.addWidget(titulo_menu)
-
-        botoes = ["Dashboard", "Financeiro", "Clientes", "Relatórios", "Configurações"]
-
-        for texto in botoes:
-            botao = QPushButton(texto)
-            botao.setStyleSheet("""
-                QPushButton {
-                    background-color: #1F2937;
-                    color: white;
-                    padding: 12px;
-                    border-radius: 8px;
-                    text-align: left;
-                    font-size: 15px;
-                }
-                QPushButton:hover {
-                    background-color: #2563EB;
-                }
-            """)
-            menu_layout.addWidget(botao)
-
-        menu_layout.addStretch()
-
-        conteudo = QFrame()
-        conteudo.setStyleSheet("background-color: #0F172A;")
-
-        conteudo_layout = QVBoxLayout(conteudo)
-
-        titulo = QLabel("Dashboard")
-        titulo.setStyleSheet("color: white; font-size: 32px; font-weight: bold;")
-        conteudo_layout.addWidget(titulo)
-
-        subtitulo = QLabel("Bem-vindo ao FinMaster PRO ERP")
-        subtitulo.setStyleSheet("color: #CBD5E1; font-size: 18px;")
-        conteudo_layout.addWidget(subtitulo)
-
-        cards = QHBoxLayout()
-
+    def carregar_dados(self):
         saldo, receitas, despesas = buscar_resumo()
 
-        for nome, valor in [
-            ("Saldo Total", f"R$ {saldo:.2f}"),
-            ("Receitas", f"R$ {receitas:.2f}"),
-            ("Despesas", f"R$ {despesas:.2f}"),
-            ("Resultado", f"R$ {saldo:.2f}")
-        ]:
-       
-            card = QFrame()
-            card.setStyleSheet("""
-                QFrame {
-                    background-color: #1E293B;
-                    border-radius: 14px;
-                    padding: 20px;
-                }
-            """)
+        self.tela.labelSaldoValor.setText(formatar_moeda(saldo))
+        self.tela.labelReceitasValor.setText(formatar_moeda(receitas))
+        self.tela.labelDespesasValor.setText(formatar_moeda(despesas))
 
-            card_layout = QVBoxLayout(card)
+        tabela = self.tela.tabelaMovimentacoes
+        movimentacoes = buscar_movimentacoes()
 
-            lbl_nome = QLabel(nome)
-            lbl_nome.setStyleSheet("color: #94A3B8; font-size: 14px;")
+        tabela.setRowCount(len(movimentacoes))
+        tabela.setColumnCount(6)
+        tabela.setHorizontalHeaderLabels(["ID", "Data", "Tipo", "Categoria", "Descrição", "Valor"])
 
-            lbl_valor = QLabel(valor)
-            lbl_valor.setStyleSheet("color: white; font-size: 24px; font-weight: bold;")
+        for linha, mov in enumerate(movimentacoes):
+            id_mov, data, tipo, categoria, descricao, valor = mov
 
-            card_layout.addWidget(lbl_nome)
-            card_layout.addWidget(lbl_valor)
+            dados = [
+                str(id_mov),
+                data,
+                tipo,
+                categoria,
+                descricao,
+                formatar_moeda(valor)
+            ]
 
-            cards.addWidget(card)
-
-        conteudo_layout.addLayout(cards)
-        conteudo_layout.addStretch()
-
-        layout_principal.addWidget(menu)
-        layout_principal.addWidget(conteudo)
+            for coluna, item in enumerate(dados):
+                tabela.setItem(linha, coluna, QTableWidgetItem(item))
 
 
 if __name__ == "__main__":

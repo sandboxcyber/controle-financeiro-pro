@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>DashboardWindow</class>
+ <widget class="QMainWindow" name="DashboardWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1400</width>
+    <height>900</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FinMaster PRO ERP</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="mainLayout">
+    <item>
+     <widget class="QFrame" name="sidebar">
+      <property name="minimumSize">
+       <size>
+        <width>260</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>260</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string>background-color: #111827;</string>
+      </property>
+      <layout class="QVBoxLayout" name="sidebarLayout">
+       <item>
+        <widget class="QLabel" name="logoLabel">
+         <property name="styleSheet">
+          <string>color: white; font-size: 26px; font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string>FinMaster</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="subLogoLabel">
+         <property name="styleSheet">
+          <string>color: #94A3B8; font-size: 13px;</string>
+         </property>
+         <property name="text">
+          <string>PRO ERP</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnDashboard">
+         <property name="text">
+          <string>Dashboard</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnFinanceiro">
+         <property name="text">
+          <string>Financeiro</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnClientes">
+         <property name="text">
+          <string>Clientes</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnFornecedores">
+         <property name="text">
+          <string>Fornecedores</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnEstoque">
+         <property name="text">
+          <string>Estoque</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnVendas">
+         <property name="text">
+          <string>Vendas</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnRelatorios">
+         <property name="text">
+          <string>Relatórios</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnConfiguracoes">
+         <property name="text">
+          <string>Configurações</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="sidebarSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint">
+          <size>
+           <width>20</width>
+           <height>300</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="contentFrame">
+      <property name="styleSheet">
+       <string>background-color: #0F172A;</string>
+      </property>
+      <layout class="QVBoxLayout" name="contentLayout">
+       <item>
+        <widget class="QLabel" name="titleLabel">
+         <property name="styleSheet">
+          <string>color: white; font-size: 34px; font-weight: bold;</string>
+         </property>
+         <property name="text">
+          <string>Dashboard</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="cardsLayout">
+         <item>
+          <widget class="QFrame" name="cardSaldo">
+           <property name="styleSheet">
+            <string>background-color: #1E293B; border-radius: 16px;</string>
+           </property>
+           <layout class="QVBoxLayout" name="cardSaldoLayout">
+            <item>
+             <widget class="QLabel" name="labelSaldoTitulo">
+              <property name="styleSheet">
+               <string>color: #94A3B8; font-size: 14px;</string>
+              </property>
+              <property name="text">
+               <string>Saldo Total</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelSaldoValor">
+              <property name="styleSheet">
+               <string>color: #2563EB; font-size: 26px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>R$ 0,00</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="cardReceitas">
+           <property name="styleSheet">
+            <string>background-color: #1E293B; border-radius: 16px;</string>
+           </property>
+           <layout class="QVBoxLayout" name="cardReceitasLayout">
+            <item>
+             <widget class="QLabel" name="labelReceitasTitulo">
+              <property name="styleSheet">
+               <string>color: #94A3B8; font-size: 14px;</string>
+              </property>
+              <property name="text">
+               <string>Receitas</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelReceitasValor">
+              <property name="styleSheet">
+               <string>color: #22C55E; font-size: 26px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>R$ 0,00</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="cardDespesas">
+           <property name="styleSheet">
+            <string>background-color: #1E293B; border-radius: 16px;</string>
+           </property>
+           <layout class="QVBoxLayout" name="cardDespesasLayout">
+            <item>
+             <widget class="QLabel" name="labelDespesasTitulo">
+              <property name="styleSheet">
+               <string>color: #94A3B8; font-size: 14px;</string>
+              </property>
+              <property name="text">
+               <string>Despesas</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="labelDespesasValor">
+              <property name="styleSheet">
+               <string>color: #EF4444; font-size: 26px; font-weight: bold;</string>
+              </property>
+              <property name="text">
+               <string>R$ 0,00</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QFrame" name="chartFrame">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>220</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string>background-color: #1E293B; border-radius: 16px;</string>
+         </property>
+         <layout class="QVBoxLayout" name="chartLayout">
+          <item>
+           <widget class="QLabel" name="chartTitle">
+            <property name="styleSheet">
+             <string>color: white; font-size: 20px; font-weight: bold;</string>
+            </property>
+            <property name="text">
+             <string>Evolução Financeira</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="chartPlaceholder">
+            <property name="styleSheet">
+             <string>color: #94A3B8; font-size: 15px;</string>
+            </property>
+            <property name="text">
+             <string>Gráfico profissional será conectado aqui.</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="tableFrame">
+         <property name="styleSheet">
+          <string>background-color: #1E293B; border-radius: 16px;</string>
+         </property>
+         <layout class="QVBoxLayout" name="tableLayout">
+          <item>
+           <widget class="QLabel" name="tableTitle">
+            <property name="styleSheet">
+             <string>color: white; font-size: 20px; font-weight: bold;</string>
+            </property>
+            <property name="text">
+             <string>Últimas movimentações</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="tabelaMovimentacoes"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
