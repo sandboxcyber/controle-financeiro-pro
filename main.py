@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, Q
 from PySide6.QtCore import Qt
 import sys
 
+from banco import buscar_resumo
 
 class FinMaster(QMainWindow):
     def __init__(self):
@@ -63,12 +64,15 @@ class FinMaster(QMainWindow):
 
         cards = QHBoxLayout()
 
+        saldo, receitas, despesas = buscar_resumo()
+
         for nome, valor in [
-            ("Saldo Total", "R$ 0,00"),
-            ("Receitas", "R$ 0,00"),
-            ("Despesas", "R$ 0,00"),
-            ("Resultado", "R$ 0,00")
+            ("Saldo Total", f"R$ {saldo:.2f}"),
+            ("Receitas", f"R$ {receitas:.2f}"),
+            ("Despesas", f"R$ {despesas:.2f}"),
+            ("Resultado", f"R$ {saldo:.2f}")
         ]:
+       
             card = QFrame()
             card.setStyleSheet("""
                 QFrame {
