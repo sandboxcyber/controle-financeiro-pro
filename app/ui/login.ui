@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>LoginWindow</class>
+ <widget class="QWidget" name="LoginWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>360</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>600</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>360</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Login - FinMaster PRO</string>
+  </property>
+  <property name="styleSheet">
+   <string>
+QWidget {
+    background-color: #0F172A;
+    color: #F8FAFC;
+    font-family: Segoe UI;
+}
+
+QFrame#cardLogin {
+    background-color: #1E293B;
+    border-radius: 18px;
+}
+
+QLabel#logoLabel {
+    color: #F8FAFC;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+QLabel#sloganLabel {
+    color: #94A3B8;
+    font-size: 13px;
+}
+
+QLabel#titleLabel {
+    color: #F8FAFC;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+QLineEdit {
+    background-color: #0F172A;
+    color: #F8FAFC;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+QLineEdit:focus {
+    border: 1px solid #2563EB;
+}
+
+QPushButton#btnEntrar {
+    background-color: #2563EB;
+    color: white;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+QPushButton#btnEntrar:hover {
+    background-color: #1D4ED8;
+}
+
+QLabel#hintLabel {
+    color: #94A3B8;
+    font-size: 12px;
+}
+   </string>
+  </property>
+
+  <layout class="QHBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>18</number>
+   </property>
+
+   <item>
+    <widget class="QFrame" name="brandPanel">
+     <layout class="QVBoxLayout" name="brandLayout">
+      <item>
+       <spacer name="brandTopSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="logoLabel">
+        <property name="text">
+         <string>FinMaster PRO</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="sloganLabel">
+        <property name="text">
+         <string>Controle total. Crescimento inteligente.</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="brandBottomSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </spacer>
+      </item>
+     </layout>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="QFrame" name="cardLogin">
+     <layout class="QVBoxLayout" name="loginLayout">
+      <property name="spacing">
+       <number>12</number>
+      </property>
+
+      <item>
+       <widget class="QLabel" name="titleLabel">
+        <property name="text">
+         <string>Entrar</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+
+      <item>
+       <widget class="QLineEdit" name="inputUsuario">
+        <property name="placeholderText">
+         <string>Usuário</string>
+        </property>
+       </widget>
+      </item>
+
+      <item>
+       <widget class="QLineEdit" name="inputSenha">
+        <property name="placeholderText">
+         <string>Senha</string>
+        </property>
+        <property name="echoMode">
+         <enum>QLineEdit::Password</enum>
+        </property>
+       </widget>
+      </item>
+
+      <item>
+       <widget class="QPushButton" name="btnEntrar">
+        <property name="text">
+         <string>Entrar</string>
+        </property>
+       </widget>
+      </item>
+
+      <item>
+       <widget class="QLabel" name="hintLabel">
+        <property name="text">
+         <string>admin / 123</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
