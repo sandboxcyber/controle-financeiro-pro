@@ -7,7 +7,27 @@ def conectar():
     return sqlite3.connect(BANCO)
 
 
+def inicializar_banco():
+    conexao = conectar()
+    cursor = conexao.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS movimentacoes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT,
+            tipo TEXT,
+            categoria TEXT,
+            descricao TEXT,
+            valor REAL
+        )
+    """)
+
+    conexao.commit()
+    conexao.close()
+
+
 def buscar_resumo():
+    inicializar_banco()
     conexao = conectar()
     cursor = conexao.cursor()
 
@@ -23,7 +43,8 @@ def buscar_resumo():
     return saldo, receitas, despesas
 
 
-def buscar_movimentacoes(limite=10):
+def buscar_movimentacoes(limite=20):
+    inicializar_banco()
     conexao = conectar()
     cursor = conexao.cursor()
 
@@ -41,6 +62,7 @@ def buscar_movimentacoes(limite=10):
 
 
 def adicionar_movimentacao(data, tipo, categoria, descricao, valor):
+    inicializar_banco()
     conexao = conectar()
     cursor = conexao.cursor()
 
@@ -53,34 +75,15 @@ def adicionar_movimentacao(data, tipo, categoria, descricao, valor):
     conexao.close()
 
 
-def excluir_movimentacao(data, tipo, categoria, descricao, valor):
-    conexao = conectar()
-    cursor = conexao.cursor()
-
-    cursor.execute("""
-        DELETE FROM movimentacoes
-        WHERE data=?
-        AND tipo=?
-        AND categoria=?
-        AND descricao=?
-        AND valor=?
-        LIMIT 1
-    """, (data, tipo, categoria, descricao, valor))
-
-    conexao.commit()
-    conexao.close()
-
 def excluir_movimentacao_por_id(id_movimentacao):
     conexao = conectar()
     cursor = conexao.cursor()
 
-    cursor.execute(
-        "DELETE FROM movimentacoes WHERE id = ?",
-        (id_movimentacao,)
-    )
+    cursor.execute("DELETE FROM movimentacoes WHERE id = ?", (id_movimentacao,))
 
     conexao.commit()
-    conexao.close()   
+    conexao.close()
+
 
 def buscar_movimentacao_por_id(id_movimentacao):
     conexao = conectar()
@@ -93,10 +96,10 @@ def buscar_movimentacao_por_id(id_movimentacao):
     """, (id_movimentacao,))
 
     dados = cursor.fetchone()
-
     conexao.close()
 
-    return dados    
+    return dados
+
 
 def atualizar_movimentacao(id_movimentacao, data, tipo, categoria, descricao, valor):
     conexao = conectar()
@@ -110,14 +113,7 @@ def atualizar_movimentacao(id_movimentacao, data, tipo, categoria, descricao, va
             descricao = ?,
             valor = ?
         WHERE id = ?
-    """, (
-        data,
-        tipo,
-        categoria,
-        descricao,
-        valor,
-        id_movimentacao
-    ))
+    """, (data, tipo, categoria, descricao, valor, id_movimentacao))
 
     conexao.commit()
     conexao.close()

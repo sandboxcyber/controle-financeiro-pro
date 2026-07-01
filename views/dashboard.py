@@ -1,10 +1,11 @@
 import ttkbootstrap as ttk
 
-from banco import buscar_resumo, buscar_movimentacoes
+from banco import buscar_resumo, buscar_movimentacoes, inicializar_banco
 from views.movimentacoes import abrir_movimentacoes
 from components.cards import criar_cards
 from components.tabela import criar_tabela
 from components.grafico import criar_grafico_resumo
+
 
 def limpar_frame(frame):
     for widget in frame.winfo_children():
@@ -12,9 +13,13 @@ def limpar_frame(frame):
 
 
 def iniciar():
+    inicializar_banco()
+
     app = ttk.Window(themename="darkly")
     app.title("FinMaster PRO")
-    app.geometry("1200x800")
+
+    # Kali Linux
+    app.geometry("1400x900")
 
     menu = ttk.Frame(app, width=250)
     menu.pack(side="left", fill="y", padx=10, pady=10)
@@ -36,12 +41,11 @@ def iniciar():
         ttk.Label(topo, text="FinMaster PRO", font=("Segoe UI", 24, "bold")).pack(side="left")
         ttk.Label(topo, text="by DBS", font=("Segoe UI", 12)).pack(side="right")
 
-        ttk.Label(conteudo, text="Dashboard", font=("Segoe UI", 28, "bold")).pack(pady=30)
+        ttk.Label(conteudo, text="Dashboard", font=("Segoe UI", 28, "bold")).pack(pady=20)
 
         criar_cards(conteudo, saldo, receitas, despesas)
         criar_grafico_resumo(conteudo, receitas, despesas)
         criar_tabela(conteudo, movimentacoes, atualizar_dashboard)
-        
 
     ttk.Button(menu, text="🏠 Dashboard", command=atualizar_dashboard).pack(fill="x", padx=10, pady=6)
 

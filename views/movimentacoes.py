@@ -32,19 +32,8 @@ def abrir_movimentacoes(ao_salvar=None, tipo="Receita", dados_edicao=None):
     ttk.Label(frame, text="Tipo").grid(row=2, column=0, sticky="w")
     tipo_var = ttk.StringVar(value=tipo)
 
-    ttk.Radiobutton(
-        frame,
-        text="Receita",
-        variable=tipo_var,
-        value="Receita"
-    ).grid(row=3, column=0, sticky="w")
-
-    ttk.Radiobutton(
-        frame,
-        text="Despesa",
-        variable=tipo_var,
-        value="Despesa"
-    ).grid(row=3, column=1, sticky="w")
+    ttk.Radiobutton(frame, text="Receita", variable=tipo_var, value="Receita").grid(row=3, column=0, sticky="w")
+    ttk.Radiobutton(frame, text="Despesa", variable=tipo_var, value="Despesa").grid(row=3, column=1, sticky="w")
 
     ttk.Label(frame, text="Categoria").grid(row=4, column=0, sticky="w")
     entrada_categoria = ttk.Entry(frame, width=30)
@@ -74,7 +63,6 @@ def abrir_movimentacoes(ao_salvar=None, tipo="Receita", dados_edicao=None):
     def salvar():
         try:
             valor = float(entrada_valor.get().replace(",", "."))
-
             tipo_atual = tipo_var.get()
 
             if id_edicao:

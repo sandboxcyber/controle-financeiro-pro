@@ -15,7 +15,9 @@ def criar_grafico_resumo(pai, receitas, despesas):
 
     grafico.bar(categorias, valores)
     grafico.set_title("Receitas x Despesas")
-    grafico.set_ylabel("Valor em R$")
+    grafico.set_ylabel("R$")
+
+    figura.tight_layout()
 
     canvas = FigureCanvasTkAgg(figura, master=area)
     canvas.draw()
