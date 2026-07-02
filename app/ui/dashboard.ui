@@ -13,6 +13,26 @@
   <property name="windowTitle">
    <string>FinMaster PRO ERP</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QTableWidget {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    gridline-color: #F1F5F9;
+    font-size: 13px;
+    alternate-background-color: #F8FAFC;
+    selection-background-color: #DBEAFE;
+    selection-color: #111827;
+}
+
+QHeaderView::section {
+    background-color: #2563EB;
+    color: white;
+    padding: 8px;
+    border: none;
+    font-weight: bold;
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="mainLayout">
     <item>
