@@ -3,9 +3,10 @@ from datetime import datetime
 from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
 from PySide6.QtGui import QPainter
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMainWindow, QTableWidgetItem
+from PySide6.QtWidgets import QMainWindow, QTableWidgetItem, QHeaderView
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QTimer
+from PySide6.QtGui import QColor
 
 from banco import buscar_resumo, buscar_movimentacoes
 
@@ -73,7 +74,7 @@ class DashboardController(QMainWindow):
         self.tela.labelReceitasValor.setText(formatar_moeda(receitas))
         self.tela.labelDespesasValor.setText(formatar_moeda(despesas))
         self.criar_grafico_financeiro(receitas, despesas)
-        
+
         tabela = self.tela.tabelaMovimentacoes
         movimentacoes = buscar_movimentacoes()
 
@@ -86,8 +87,21 @@ class DashboardController(QMainWindow):
             dados = [str(id_mov), data, tipo, categoria, descricao, formatar_moeda(valor)]
 
             for coluna, item in enumerate(dados):
-                tabela.setItem(linha, coluna, QTableWidgetItem(item))
+                celula = QTableWidgetItem(item)
 
+                if tipo == "Receita":
+                    celula.setForeground(QColor("#22C55E"))
+                elif tipo == "Despesa":
+                    celula.setForeground(QColor("#EF4444"))
+
+                tabela.setItem(linha, coluna, celula)
+                
+                tabela.setColumnHidden(0, True)
+                tabela.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+                tabela.setAlternatingRowColors(True)
+                tabela.verticalHeader().setVisible(False)
+                tabela.setSortingEnabled(True)
+                
     def criar_grafico_financeiro(self, receitas, despesas):
         # Limpa o conteúdo antigo do bloco de gráfico
         layout = self.tela.chartLayout
