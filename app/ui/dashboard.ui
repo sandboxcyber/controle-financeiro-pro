@@ -171,17 +171,23 @@ QHeaderView::section {
         <layout class="QHBoxLayout" name="cardsLayout">
          <item>
           <widget class="QFrame" name="cardSaldo">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>120</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string>background-color: #1E293B; border-radius: 16px;</string>
            </property>
            <layout class="QVBoxLayout" name="cardSaldoLayout">
             <item>
-             <widget class="QLabel" name="labelSaldoTitulo">
+             <widget class="QLabel" name="label">
               <property name="styleSheet">
                <string>color: #94A3B8; font-size: 14px;</string>
               </property>
               <property name="text">
-               <string>Saldo Total</string>
+               <string>💰 Saldo Total</string>
               </property>
              </widget>
             </item>
@@ -200,6 +206,18 @@ QHeaderView::section {
          </item>
          <item>
           <widget class="QFrame" name="cardReceitas">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>120</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string>background-color: #1E293B; border-radius: 16px;</string>
            </property>
@@ -210,7 +228,7 @@ QHeaderView::section {
                <string>color: #94A3B8; font-size: 14px;</string>
               </property>
               <property name="text">
-               <string>Receitas</string>
+               <string>📈 Receitas</string>
               </property>
              </widget>
             </item>
@@ -229,6 +247,12 @@ QHeaderView::section {
          </item>
          <item>
           <widget class="QFrame" name="cardDespesas">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>120</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string>background-color: #1E293B; border-radius: 16px;</string>
            </property>
@@ -239,7 +263,7 @@ QHeaderView::section {
                <string>color: #94A3B8; font-size: 14px;</string>
               </property>
               <property name="text">
-               <string>Despesas</string>
+               <string>📉 Despesas</string>
               </property>
              </widget>
             </item>

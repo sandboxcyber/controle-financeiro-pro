@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from PySide6.QtCharts import QChart, QChartView, QBarSeries, QBarSet, QBarCategoryAxis, QValueAxis
+from PySide6.QtGui import QPainter
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMainWindow, QTableWidgetItem
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, QTimer
@@ -69,7 +72,8 @@ class DashboardController(QMainWindow):
         self.tela.labelSaldoValor.setText(formatar_moeda(saldo))
         self.tela.labelReceitasValor.setText(formatar_moeda(receitas))
         self.tela.labelDespesasValor.setText(formatar_moeda(despesas))
-
+        self.criar_grafico_financeiro(receitas, despesas)
+        
         tabela = self.tela.tabelaMovimentacoes
         movimentacoes = buscar_movimentacoes()
 
@@ -83,3 +87,53 @@ class DashboardController(QMainWindow):
 
             for coluna, item in enumerate(dados):
                 tabela.setItem(linha, coluna, QTableWidgetItem(item))
+
+    def criar_grafico_financeiro(self, receitas, despesas):
+        # Limpa o conteúdo antigo do bloco de gráfico
+        layout = self.tela.chartLayout
+
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        receitas_barra = QBarSet("Receitas")
+        despesas_barra = QBarSet("Despesas")
+
+        receitas_barra.append(receitas)
+        despesas_barra.append(despesas)
+
+        receitas_barra.setColor("#22C55E")
+        despesas_barra.setColor("#EF4444")
+
+        series = QBarSeries()
+        series.append(receitas_barra)
+        series.append(despesas_barra)
+
+        chart = QChart()
+        chart.addSeries(series)
+        chart.setTitle("Receitas x Despesas")
+        chart.setAnimationOptions(QChart.SeriesAnimations)
+        chart.setBackgroundBrush(Qt.transparent)
+
+        eixo_x = QBarCategoryAxis()
+        eixo_x.append(["Resumo"])
+
+        eixo_y = QValueAxis()
+        eixo_y.setLabelFormat("R$ %.0f")
+
+        chart.addAxis(eixo_x, Qt.AlignBottom)
+        chart.addAxis(eixo_y, Qt.AlignLeft)
+
+        series.attachAxis(eixo_x)
+        series.attachAxis(eixo_y)
+
+        chart.legend().setVisible(True)
+        chart.legend().setAlignment(Qt.AlignBottom)
+
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.Antialiasing)
+        chart_view.setStyleSheet("background: transparent;")
+
+        layout.addWidget(chart_view)        
