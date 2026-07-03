@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FinanceiroPage</class>
+ <widget class="QWidget" name="FinanceiroPage">
+  <property name="styleSheet">
+   <string>
+QWidget {
+    background-color: #0F172A;
+    color: #F8FAFC;
+    font-family: Segoe UI;
+}
+
+QLabel#tituloFinanceiro {
+    font-size: 30px;
+    font-weight: bold;
+    color: #F8FAFC;
+}
+
+QLineEdit {
+    background-color: #1E293B;
+    color: #F8FAFC;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+}
+
+QPushButton {
+    background-color: #2563EB;
+    color: white;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #1D4ED8;
+}
+
+QTableWidget {
+    background-color: #FFFFFF;
+    color: #111827;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    gridline-color: #F1F5F9;
+    font-size: 13px;
+    alternate-background-color: #F8FAFC;
+    selection-background-color: #DBEAFE;
+    selection-color: #111827;
+}
+
+QHeaderView::section {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+   </string>
+  </property>
+
+  <layout class="QVBoxLayout" name="mainLayout">
+   <item>
+    <widget class="QLabel" name="tituloFinanceiro">
+     <property name="text">
+      <string>💰 Financeiro</string>
+     </property>
+    </widget>
+   </item>
+
+   <item>
+    <widget class="QLineEdit" name="inputPesquisa">
+     <property name="placeholderText">
+      <string>🔍 Pesquisar movimentações...</string>
+     </property>
+    </widget>
+   </item>
+
+   <item>
+    <layout class="QHBoxLayout" name="botoesLayout">
+     <item>
+      <widget class="QPushButton" name="btnNovaReceita">
+       <property name="text">
+        <string>+ Nova Receita</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNovaDespesa">
+       <property name="text">
+        <string>- Nova Despesa</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnExportar">
+       <property name="text">
+        <string>📤 Exportar</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+
+   <item>
+    <widget class="QTableWidget" name="tabelaFinanceiro"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

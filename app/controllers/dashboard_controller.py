@@ -9,7 +9,7 @@ from PySide6.QtCore import QFile, QTimer
 from PySide6.QtGui import QColor
 
 from banco import buscar_resumo, buscar_movimentacoes
-
+from app.controllers.financeiro_controller import FinanceiroController
 
 def formatar_moeda(valor):
     return f"R$ {valor:.2f}".replace(".", ",")
@@ -48,8 +48,8 @@ class DashboardController(QMainWindow):
         self.tela.chartPlaceholder.setText(texto)
 
     def configurar_menu(self):
-        self.tela.btnDashboard.clicked.connect(self.mostrar_dashboard)
-        self.tela.btnFinanceiro.clicked.connect(lambda: self.mostrar_tela("💰 Financeiro", "Módulo financeiro em construção."))
+        self.tela.btnDashboard.clicked.connect(self.recarregar_dashboard)
+        self.tela.btnFinanceiro.clicked.connect(self.abrir_financeiro)
         self.tela.btnClientes.clicked.connect(lambda: self.mostrar_tela("👥 Clientes", "Cadastro de clientes em construção."))
         self.tela.btnFornecedores.clicked.connect(lambda: self.mostrar_tela("🚚 Fornecedores", "Cadastro de fornecedores em construção."))
         self.tela.btnEstoque.clicked.connect(lambda: self.mostrar_tela("📦 Estoque", "Controle de estoque em construção."))
@@ -66,6 +66,29 @@ class DashboardController(QMainWindow):
         self.tela.titleLabel.setText(titulo)
         self.tela.chartTitle.setText(mensagem)
         self.tela.chartPlaceholder.setText("Em breve este módulo terá recursos completos.")
+
+    def recarregar_dashboard(self):
+        from app.controllers.dashboard_controller import DashboardController
+
+        novo_dashboard = DashboardController()
+        novo_dashboard.showMaximized()
+
+        self.close()
+
+    def abrir_financeiro(self):
+        self.tela.titleLabel.setText("💰 Financeiro")
+
+        financeiro = FinanceiroController()
+
+        layout = self.tela.chartLayout
+
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        layout.addWidget(financeiro.tela)
 
     def carregar_dados(self):
         saldo, receitas, despesas = buscar_resumo()
