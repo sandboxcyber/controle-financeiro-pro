@@ -43,9 +43,15 @@ class DashboardController(QMainWindow):
         self.atualizar_data_hora()
 
     def atualizar_data_hora(self):
-        agora = datetime.now()
-        texto = agora.strftime("FinMaster PRO ERP • %d/%m/%Y • %H:%M:%S")
-        self.tela.chartPlaceholder.setText(texto)
+        try:
+            agora = datetime.now()
+            texto = agora.strftime("FinMaster PRO ERP • %d/%m/%Y • %H:%M:%S")
+
+            if hasattr(self.tela, "chartPlaceholder"):
+                self.tela.chartPlaceholder.setText(texto)
+
+        except RuntimeError:
+            pass
 
     def configurar_menu(self):
         self.tela.btnDashboard.clicked.connect(self.recarregar_dashboard)
@@ -75,10 +81,17 @@ class DashboardController(QMainWindow):
 
         self.close()
 
+    def atualizar_cards(self):
+        saldo, receitas, despesas = buscar_resumo()
+
+        self.tela.labelSaldoValor.setText(formatar_moeda(saldo))
+        self.tela.labelReceitasValor.setText(formatar_moeda(receitas))
+        self.tela.labelDespesasValor.setText(formatar_moeda(despesas))
+
     def abrir_financeiro(self):
         self.tela.titleLabel.setText("💰 Financeiro")
 
-        financeiro = FinanceiroController()
+        self.financeiro_controller = FinanceiroController(self.atualizar_cards)
 
         layout = self.tela.chartLayout
 
@@ -88,7 +101,7 @@ class DashboardController(QMainWindow):
             if widget:
                 widget.deleteLater()
 
-        layout.addWidget(financeiro.tela)
+        layout.addWidget(self.financeiro_controller.tela)
 
     def carregar_dados(self):
         saldo, receitas, despesas = buscar_resumo()
