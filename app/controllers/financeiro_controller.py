@@ -44,6 +44,7 @@ class FinanceiroController(QWidget):
         self.tela.btnNovaReceita.clicked.connect(self.nova_receita)
         self.tela.btnNovaDespesa.clicked.connect(self.nova_despesa)
         self.tela.btnExportar.clicked.connect(self.exportar)
+        self.tela.inputPesquisa.textChanged.connect(self.pesquisar)
 
     def nova_receita(self):
         self.janela_movimentacao = MovimentacaoDialog("Receita", self.atualizar_tudo)
@@ -139,6 +140,21 @@ class FinanceiroController(QWidget):
     def excluir_movimentacao(self, id_movimentacao):
         excluir_movimentacao_por_id(id_movimentacao)
         self.atualizar_tudo()
+
+    def pesquisar(self):
+        texto = self.tela.inputPesquisa.text().lower()
+
+        for linha in range(self.tela.tabelaFinanceiro.rowCount()):
+            mostrar = False
+
+            for coluna in range(self.tela.tabelaFinanceiro.columnCount() - 1):
+                item = self.tela.tabelaFinanceiro.item(linha, coluna)
+
+                if item and texto in item.text().lower():
+                    mostrar = True
+                    break
+
+            self.tela.tabelaFinanceiro.setRowHidden(linha, not mostrar)
 
     def exportar(self):
         print("Exportar")
