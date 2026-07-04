@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QTableWidgetItem, QHeaderView,
-    QPushButton, QHBoxLayout
+    QPushButton, QHBoxLayout, QComboBox
 )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
@@ -30,6 +30,12 @@ class FinanceiroController(QWidget):
 
         self.tela = loader.load(arquivo)
         arquivo.close()
+
+        self.combo_tipo = QComboBox()
+        self.combo_tipo.addItems(["Todos", "Receita", "Despesa"])
+        self.combo_tipo.currentTextChanged.connect(self.pesquisar)
+
+        self.tela.mainLayout.insertWidget(2, self.combo_tipo)
 
         self.configurar_eventos()
         self.carregar_tabela()
@@ -143,16 +149,29 @@ class FinanceiroController(QWidget):
 
     def pesquisar(self):
         texto = self.tela.inputPesquisa.text().lower()
+        tipo_filtro = self.combo_tipo.currentText()
 
         for linha in range(self.tela.tabelaFinanceiro.rowCount()):
-            mostrar = False
+            mostrar = True
 
-            for coluna in range(self.tela.tabelaFinanceiro.columnCount() - 1):
-                item = self.tela.tabelaFinanceiro.item(linha, coluna)
+            if tipo_filtro != "Todos":
+                item_tipo = self.tela.tabelaFinanceiro.item(linha, 2)
 
-                if item and texto in item.text().lower():
-                    mostrar = True
-                    break
+                if not item_tipo or item_tipo.text() != tipo_filtro:
+                    mostrar = False
+
+            if texto:
+                encontrou_texto = False
+
+                for coluna in range(self.tela.tabelaFinanceiro.columnCount() - 1):
+                    item = self.tela.tabelaFinanceiro.item(linha, coluna)
+
+                    if item and texto in item.text().lower():
+                        encontrou_texto = True
+                        break
+
+                if not encontrou_texto:
+                    mostrar = False
 
             self.tela.tabelaFinanceiro.setRowHidden(linha, not mostrar)
 
