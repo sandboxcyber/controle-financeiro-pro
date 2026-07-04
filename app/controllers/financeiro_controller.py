@@ -6,7 +6,11 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
 from PySide6.QtGui import QColor
 
-from banco import buscar_movimentacoes
+from banco import (
+    buscar_movimentacoes,
+    excluir_movimentacao_por_id,
+    buscar_movimentacao_por_id
+)
 from app.controllers.movimentacao_dialog import MovimentacaoDialog
 
 
@@ -78,8 +82,37 @@ class FinanceiroController(QWidget):
             layout = QHBoxLayout(container)
             layout.setContentsMargins(4, 2, 4, 2)
 
-            btn_editar = QPushButton("✏")
-            btn_excluir = QPushButton("🗑")
+            btn_editar = QPushButton("Editar")
+            btn_excluir = QPushButton("Excluir")
+
+            btn_editar.setMinimumWidth(70)
+            btn_excluir.setMinimumWidth(70)
+
+            btn_editar.setStyleSheet("""
+            QPushButton {
+                background: #2563EB;
+                color: white;
+                border-radius: 6px;
+                padding: 6px;
+            }
+            """)
+
+            btn_excluir.setStyleSheet("""
+            QPushButton {
+                background: #DC2626;
+                color: white;
+                border-radius: 6px;
+                padding: 6px;
+            }
+            """)
+
+            btn_editar.clicked.connect(
+                lambda _, id_mov=id_mov: self.editar_movimentacao(id_mov)
+            )
+
+            btn_excluir.clicked.connect(
+                lambda _, id_mov=id_mov: self.excluir_movimentacao(id_mov)
+            )
 
             layout.addWidget(btn_editar)
             layout.addWidget(btn_excluir)
@@ -91,6 +124,21 @@ class FinanceiroController(QWidget):
         tabela.setAlternatingRowColors(True)
         tabela.verticalHeader().setVisible(False)
         tabela.setSortingEnabled(True)
+
+    def editar_movimentacao(self, id_movimentacao):
+        dados = buscar_movimentacao_por_id(id_movimentacao)
+
+        self.janela_movimentacao = MovimentacaoDialog(
+            dados[2],
+            self.atualizar_tudo,
+            dados_edicao=dados
+        )
+
+        self.janela_movimentacao.exec()
+
+    def excluir_movimentacao(self, id_movimentacao):
+        excluir_movimentacao_por_id(id_movimentacao)
+        self.atualizar_tudo()
 
     def exportar(self):
         print("Exportar")

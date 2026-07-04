@@ -5,17 +5,24 @@ from PySide6.QtWidgets import (
     QPushButton, QHBoxLayout, QMessageBox
 )
 
-from banco import adicionar_movimentacao
+from banco import adicionar_movimentacao, atualizar_movimentacao
 
 
 class MovimentacaoDialog(QDialog):
-    def __init__(self, tipo, ao_salvar=None):
+    def __init__(self, tipo, ao_salvar=None, dados_edicao=None):
         super().__init__()
 
         self.tipo = tipo
         self.ao_salvar = ao_salvar
+        self.id_edicao = None
 
-        self.setWindowTitle(f"Nova {tipo}")
+        if dados_edicao:
+            self.id_edicao = dados_edicao[0]
+            self.tipo = dados_edicao[2]
+            self.setWindowTitle("Editar movimentação")
+        else:
+            self.setWindowTitle(f"Nova {tipo}")
+
         self.setFixedSize(420, 360)
 
         layout = QVBoxLayout(self)
@@ -39,6 +46,12 @@ class MovimentacaoDialog(QDialog):
         layout.addWidget(QLabel("Valor"))
         layout.addWidget(self.valor)
 
+        if dados_edicao:
+            self.data.setText(dados_edicao[1])
+            self.categoria.setText(dados_edicao[3])
+            self.descricao.setText(dados_edicao[4])
+            self.valor.setText(str(dados_edicao[5]))
+
         botoes = QHBoxLayout()
 
         btn_cancelar = QPushButton("Cancelar")
@@ -56,13 +69,23 @@ class MovimentacaoDialog(QDialog):
         try:
             valor = float(self.valor.text().replace(",", "."))
 
-            adicionar_movimentacao(
-                self.data.text(),
-                self.tipo,
-                self.categoria.text(),
-                self.descricao.text(),
-                valor
-            )
+            if self.id_edicao:
+                atualizar_movimentacao(
+                    self.id_edicao,
+                    self.data.text(),
+                    self.tipo,
+                    self.categoria.text(),
+                    self.descricao.text(),
+                    valor
+                )
+            else:
+                adicionar_movimentacao(
+                    self.data.text(),
+                    self.tipo,
+                    self.categoria.text(),
+                    self.descricao.text(),
+                    valor
+                )
 
             if self.ao_salvar:
                 self.ao_salvar()
