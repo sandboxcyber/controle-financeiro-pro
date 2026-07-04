@@ -1,4 +1,7 @@
-from PySide6.QtWidgets import QWidget, QTableWidgetItem, QHeaderView
+from PySide6.QtWidgets import (
+    QWidget, QTableWidgetItem, QHeaderView,
+    QPushButton, QHBoxLayout
+)
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
 from PySide6.QtGui import QColor
@@ -14,9 +17,9 @@ def formatar_moeda(valor):
 class FinanceiroController(QWidget):
     def __init__(self, ao_atualizar_dashboard=None):
         super().__init__()
-        
+
         self.ao_atualizar_dashboard = ao_atualizar_dashboard
-        
+
         loader = QUiLoader()
         arquivo = QFile("app/ui/financeiro.ui")
         arquivo.open(QFile.ReadOnly)
@@ -26,6 +29,7 @@ class FinanceiroController(QWidget):
 
         self.configurar_eventos()
         self.carregar_tabela()
+
     def atualizar_tudo(self):
         self.carregar_tabela()
 
@@ -51,8 +55,10 @@ class FinanceiroController(QWidget):
 
         tabela.setSortingEnabled(False)
         tabela.setRowCount(len(movimentacoes))
-        tabela.setColumnCount(6)
-        tabela.setHorizontalHeaderLabels(["ID", "Data", "Tipo", "Categoria", "Descrição", "Valor"])
+        tabela.setColumnCount(7)
+        tabela.setHorizontalHeaderLabels(
+            ["ID", "Data", "Tipo", "Categoria", "Descrição", "Valor", "Ações"]
+        )
 
         for linha, mov in enumerate(movimentacoes):
             id_mov, data, tipo, categoria, descricao, valor = mov
@@ -67,6 +73,18 @@ class FinanceiroController(QWidget):
                     celula.setForeground(QColor("#EF4444"))
 
                 tabela.setItem(linha, coluna, celula)
+
+            container = QWidget()
+            layout = QHBoxLayout(container)
+            layout.setContentsMargins(4, 2, 4, 2)
+
+            btn_editar = QPushButton("✏")
+            btn_excluir = QPushButton("🗑")
+
+            layout.addWidget(btn_editar)
+            layout.addWidget(btn_excluir)
+
+            tabela.setCellWidget(linha, 6, container)
 
         tabela.setColumnHidden(0, True)
         tabela.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
