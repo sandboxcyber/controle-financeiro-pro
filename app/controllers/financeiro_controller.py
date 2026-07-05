@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QWidget, QTableWidgetItem, QHeaderView,
-    QPushButton, QHBoxLayout, QComboBox
+    QPushButton, QHBoxLayout, QComboBox, QMessageBox
 )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
@@ -34,7 +34,6 @@ class FinanceiroController(QWidget):
         self.combo_tipo = QComboBox()
         self.combo_tipo.addItems(["Todos", "Receita", "Despesa"])
         self.combo_tipo.currentTextChanged.connect(self.pesquisar)
-
         self.tela.mainLayout.insertWidget(2, self.combo_tipo)
 
         self.configurar_eventos()
@@ -128,6 +127,7 @@ class FinanceiroController(QWidget):
 
         tabela.setColumnHidden(0, True)
         tabela.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        tabela.setColumnWidth(6, 180)
         tabela.setAlternatingRowColors(True)
         tabela.verticalHeader().setVisible(False)
         tabela.setSortingEnabled(True)
@@ -144,8 +144,19 @@ class FinanceiroController(QWidget):
         self.janela_movimentacao.exec()
 
     def excluir_movimentacao(self, id_movimentacao):
-        excluir_movimentacao_por_id(id_movimentacao)
-        self.atualizar_tudo()
+        msg = QMessageBox(self.tela)
+        msg.setWindowTitle("Excluir movimentação")
+        msg.setText("Deseja realmente excluir esta movimentação?")
+        msg.setIcon(QMessageBox.Icon.Warning)
+
+        btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
+        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+
+        msg.exec()
+
+        if msg.clickedButton() == btn_sim:
+            excluir_movimentacao_por_id(id_movimentacao)
+            self.atualizar_tudo()
 
     def pesquisar(self):
         texto = self.tela.inputPesquisa.text().lower()
