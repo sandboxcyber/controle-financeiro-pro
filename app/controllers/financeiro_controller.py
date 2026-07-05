@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PySide6.QtWidgets import (
     QWidget, QTableWidgetItem, QHeaderView,
     QPushButton, QHBoxLayout, QComboBox, QMessageBox
@@ -32,9 +34,14 @@ class FinanceiroController(QWidget):
         arquivo.close()
 
         self.combo_tipo = QComboBox()
-        self.combo_tipo.addItems(["Todos", "Receita", "Despesa"])
+        self.combo_tipo.addItems(["Todos os tipos", "Receita", "Despesa"])
         self.combo_tipo.currentTextChanged.connect(self.pesquisar)
         self.tela.mainLayout.insertWidget(2, self.combo_tipo)
+
+        self.combo_periodo = QComboBox()
+        self.combo_periodo.addItems(["Todo período", "Hoje", "Este mês", "Este ano"])
+        self.combo_periodo.currentTextChanged.connect(self.pesquisar)
+        self.tela.mainLayout.insertWidget(3, self.combo_periodo)
 
         self.configurar_eventos()
         self.carregar_tabela()
@@ -132,6 +139,8 @@ class FinanceiroController(QWidget):
         tabela.verticalHeader().setVisible(False)
         tabela.setSortingEnabled(True)
 
+        self.pesquisar()
+
     def editar_movimentacao(self, id_movimentacao):
         dados = buscar_movimentacao_por_id(id_movimentacao)
 
@@ -150,7 +159,7 @@ class FinanceiroController(QWidget):
         msg.setIcon(QMessageBox.Icon.Warning)
 
         btn_sim = msg.addButton("Sim", QMessageBox.ButtonRole.YesRole)
-        btn_nao = msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
+        msg.addButton("Não", QMessageBox.ButtonRole.NoRole)
 
         msg.exec()
 
@@ -161,14 +170,34 @@ class FinanceiroController(QWidget):
     def pesquisar(self):
         texto = self.tela.inputPesquisa.text().lower()
         tipo_filtro = self.combo_tipo.currentText()
+        periodo_filtro = self.combo_periodo.currentText()
+        hoje = datetime.now()
 
         for linha in range(self.tela.tabelaFinanceiro.rowCount()):
             mostrar = True
 
-            if tipo_filtro != "Todos":
+            if tipo_filtro != "Todos os tipos":
                 item_tipo = self.tela.tabelaFinanceiro.item(linha, 2)
-
                 if not item_tipo or item_tipo.text() != tipo_filtro:
+                    mostrar = False
+
+            if periodo_filtro != "Todo período":
+                item_data = self.tela.tabelaFinanceiro.item(linha, 1)
+
+                try:
+                    data_linha = datetime.strptime(item_data.text(), "%d/%m/%Y")
+
+                    if periodo_filtro == "Hoje" and data_linha.date() != hoje.date():
+                        mostrar = False
+
+                    if periodo_filtro == "Este mês":
+                        if data_linha.month != hoje.month or data_linha.year != hoje.year:
+                            mostrar = False
+
+                    if periodo_filtro == "Este ano" and data_linha.year != hoje.year:
+                        mostrar = False
+
+                except Exception:
                     mostrar = False
 
             if texto:
