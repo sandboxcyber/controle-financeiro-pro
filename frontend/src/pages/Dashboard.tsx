@@ -1,52 +1,171 @@
-import SummaryCard from "../components/SummaryCard";
+import { useEffect, useState } from "react";
+import { FINANCE_UPDATED_EVENT } from "../services/financeEvents";
+
+import {
+  FiArrowDownRight,
+  FiArrowUpRight,
+  FiCreditCard,
+  FiDollarSign,
+} from "react-icons/fi";
+
+import { api } from "../services/api";
 import BalanceChart from "../components/BalanceChart";
+import StatCard from "../components/dashboard/StatCard";
+import WelcomeCard from "../components/dashboard/WelcomeCard";
+import "../styles/dashboard.css";
+
+type Resumo = {
+  receitas: string;
+  despesas: string;
+  saldo: string;
+  falta_pagar: string;
+};
 
 export default function Dashboard() {
+  const [resumo, setResumo] = useState<Resumo>({
+    receitas: "R$ 0,00",
+    despesas: "R$ 0,00",
+    saldo: "R$ 0,00",
+    falta_pagar: "R$ 0,00",
+  });
+
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+  async function carregarResumo() {
+    try {
+      setCarregando(true);
+
+      const resposta = await api.get("/dashboard/resumo");
+
+      setResumo(resposta.data);
+    } catch {
+      console.error("Erro ao carregar o resumo financeiro");
+    } finally {
+      setCarregando(false);
+    }
+  }
+
+  carregarResumo();
+
+  window.addEventListener(
+    FINANCE_UPDATED_EVENT,
+    carregarResumo
+  );
+
+  window.addEventListener("focus", carregarResumo);
+
+  return () => {
+    window.removeEventListener(
+      FINANCE_UPDATED_EVENT,
+      carregarResumo
+    );
+
+    window.removeEventListener("focus", carregarResumo);
+  };
+}, []);
+
   return (
-    <div style={{ padding: 30 }}>
+    <div className="premium-dashboard">
+      <WelcomeCard />
 
-      <h1 style={{ marginBottom: 5 }}>
-        Dashboard Pessoal
-      </h1>
+      <section className="premium-stats-grid">
+        <StatCard
+          title="Saldo atual"
+          value={carregando ? "Carregando..." : resumo.saldo}
+          subtitle="Disponível no momento"
+          icon={<FiDollarSign />}
+          tone="blue"
+        />
 
-      <p style={{ color: "#888", marginBottom: 25 }}>
-        Visão geral • Este mês
-      </p>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4,1fr)",
-          gap: 20,
-          marginBottom: 30,
-        }}
-      >
-        <SummaryCard
+        <StatCard
           title="Receitas"
-          value="R$ 13.700"
-          color="#00C853"
+          value={carregando ? "Carregando..." : resumo.receitas}
+          subtitle="Entradas neste mês"
+          icon={<FiArrowUpRight />}
+          tone="green"
         />
 
-        <SummaryCard
+        <StatCard
           title="Despesas"
-          value="R$ 10.108"
-          color="#FF5252"
+          value={carregando ? "Carregando..." : resumo.despesas}
+          subtitle="Saídas neste mês"
+          icon={<FiArrowDownRight />}
+          tone="red"
         />
 
-        <SummaryCard
-          title="Saldo"
-          value="R$ 3.591"
-          color="#2196F3"
-        />
-
-        <SummaryCard
+        <StatCard
           title="Falta pagar"
-          value="R$ 5.980"
-          color="#FF9800"
+          value={carregando ? "Carregando..." : resumo.falta_pagar}
+          subtitle="Contas pendentes"
+          icon={<FiCreditCard />}
+          tone="orange"
         />
-      </div>
+      </section>
 
-      <BalanceChart />
+      <section className="dashboard-main-grid">
+        <div className="dashboard-panel chart-panel">
+          <div className="panel-heading">
+            <div>
+              <span className="panel-eyebrow">VISÃO FINANCEIRA</span>
+              <h2>Evolução do saldo</h2>
+            </div>
+
+            <select defaultValue="mes">
+              <option value="mes">Este mês</option>
+              <option value="trimestre">Últimos 3 meses</option>
+              <option value="ano">Este ano</option>
+            </select>
+          </div>
+
+          <BalanceChart />
+        </div>
+
+        <aside className="dashboard-panel insight-panel">
+          <span className="panel-eyebrow">ANÁLISE AUTOMÁTICA</span>
+          <h2>FinMaster IA</h2>
+
+          <div className="insight-item">
+            <strong>Seu saldo está positivo</strong>
+            <p>Você ainda tem margem para investir ou antecipar contas.</p>
+          </div>
+
+          <div className="insight-item">
+            <strong>Atenção às contas pendentes</strong>
+            <p>Revise o valor em “Falta pagar” antes do fim do mês.</p>
+          </div>
+
+          <button>Ver análise completa</button>
+        </aside>
+      </section>
+
+      <section className="dashboard-bottom-grid">
+        <div className="dashboard-panel">
+          <div className="panel-heading">
+            <div>
+              <span className="panel-eyebrow">MOVIMENTAÇÕES</span>
+              <h2>Últimos lançamentos</h2>
+            </div>
+          </div>
+
+          <div className="empty-state">
+            Seus próximos lançamentos aparecerão aqui.
+          </div>
+        </div>
+
+        <div className="dashboard-panel">
+          <div className="panel-heading">
+            <div>
+              <span className="panel-eyebrow">ALERTAS</span>
+              <h2>Próximas contas</h2>
+            </div>
+          </div>
+
+          <div className="empty-state">
+            Nenhuma conta próxima do vencimento.
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
