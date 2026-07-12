@@ -1,3 +1,4 @@
+from app.routes.ai import router as ai_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.models.expense import Expense
@@ -43,6 +44,7 @@ app.include_router(auth_router)
 app.include_router(income_router)
 app.include_router(expense_router)
 app.include_router(fixed_expense_router)
+app.include_router(ai_router)
 
 @app.get("/")
 def home():
