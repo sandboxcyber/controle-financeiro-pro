@@ -1,29 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { avisarAtualizacaoFinanceira } from "../services/financeEvents";
+import { FiPlus } from "react-icons/fi";
+
 import {
-  FiCheck,
-  FiEdit2,
-  FiPlus,
-  FiSearch,
-  FiTrash2,
-  FiX,
-} from "react-icons/fi";
+  ExpenseDetailsDrawer,
+  ExpenseFormModal,
+  ExpenseSearch,
+  ExpenseSummaryCards,
+  ExpenseTable,
+  type FixedExpense,
+} from "../components/fixedExpenses";
+
+import { avisarAtualizacaoFinanceira } from "../services/financeEvents";
 
 import {
   fixedExpenseService,
   type FixedExpensePayload,
 } from "../services/fixedExpense";
-
-type FixedExpense = {
-  id: number;
-  description: string;
-  amount: number;
-  category?: string;
-  due_day: number;
-  is_active: boolean;
-  paid_this_month: boolean;
-  recurrence: string;
-};
 
 const categorias = [
   "Moradia",
@@ -43,12 +35,6 @@ const categorias = [
   "Outros",
 ];
 
-const moeda = (valor: number) =>
-  new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(valor);
-
 export default function FixedExpenses() {
   const [lista, setLista] = useState<FixedExpense[]>([]);
   const [busca, setBusca] = useState("");
@@ -62,10 +48,13 @@ export default function FixedExpenses() {
   const [category, setCategory] = useState("");
   const [dueDay, setDueDay] = useState("");
   const [isActive, setIsActive] = useState(true);
-  
 
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedExpense, setSelectedExpense] =
+    useState<FixedExpense | null>(null);
 
   async function carregar() {
     try {
@@ -100,6 +89,30 @@ export default function FixedExpenses() {
     [lista]
   );
 
+  const resumo = useMemo(() => {
+    const hoje = new Date().getDate();
+
+    return {
+      pagas: lista.filter(
+        (item) => item.is_active && item.paid_this_month
+      ).length,
+
+      atrasadas: lista.filter(
+        (item) =>
+          item.is_active &&
+          !item.paid_this_month &&
+          hoje > item.due_day
+      ).length,
+
+      pendentes: lista.filter(
+        (item) =>
+          item.is_active &&
+          !item.paid_this_month &&
+          hoje <= item.due_day
+      ).length,
+    };
+  }, [lista]);
+
   function abrirNova() {
     setEditandoId(null);
     setDescription("");
@@ -107,9 +120,9 @@ export default function FixedExpenses() {
     setCategory("");
     setDueDay("");
     setIsActive(true);
+    setRecurrence("Mensal");
     setErro("");
     setModalAberto(true);
-    setRecurrence("Mensal");
   }
 
   function abrirEdicao(item: FixedExpense) {
@@ -119,9 +132,14 @@ export default function FixedExpenses() {
     setCategory(item.category ?? "");
     setDueDay(String(item.due_day));
     setIsActive(item.is_active);
+    setRecurrence(item.recurrence);
     setErro("");
     setModalAberto(true);
-    setRecurrence(item.recurrence);
+  }
+
+  function abrirDetalhes(item: FixedExpense) {
+    setSelectedExpense(item);
+    setDrawerOpen(true);
   }
 
   function fecharModal() {
@@ -158,7 +176,7 @@ export default function FixedExpenses() {
       amount: valor,
       category: category.trim() || "Outros",
       due_day: dia,
-      is_active: isActive, 
+      is_active: isActive,
       recurrence,
     };
 
@@ -173,6 +191,7 @@ export default function FixedExpenses() {
       }
 
       await carregar();
+      avisarAtualizacaoFinanceira();
       setModalAberto(false);
     } catch {
       setErro("Não foi possível salvar a despesa fixa.");
@@ -191,33 +210,89 @@ export default function FixedExpenses() {
     try {
       await fixedExpenseService.excluir(id);
       await carregar();
+      avisarAtualizacaoFinanceira();
     } catch {
       setErro("Não foi possível excluir a despesa fixa.");
     }
   }
 
-    async function pagar(id: number) {
-  const confirmou = window.confirm(
-    "Confirmar o pagamento desta despesa fixa?"
-  );
+  async function pagar(id: number) {
+    const confirmou = window.confirm(
+      "Confirmar o pagamento desta despesa fixa?"
+    );
 
-  if (!confirmou) return;
+    if (!confirmou) return;
 
-  try {
-    setErro("");
-
-    await fixedExpenseService.pagar(id);
-
-    await carregar();
-    avisarAtualizacaoFinanceira();
-  } catch (error: any) {
-    const mensagem =
-      error?.response?.data?.detail ||
-      "Não foi possível registrar o pagamento.";
-
-    setErro(mensagem);
+    try {
+      setErro("");
+      await fixedExpenseService.pagar(id);
+      await carregar();
+      avisarAtualizacaoFinanceira();
+    } catch (error: any) {
+      setErro(
+        error?.response?.data?.detail ||
+          "Não foi possível registrar o pagamento."
+      );
+    }
   }
-}
+
+  function calcularStatus(item: FixedExpense) {
+    if (!item.is_active) {
+      return { texto: "Inativa", cor: "#64748b" };
+    }
+
+    if (item.paid_this_month) {
+      return { texto: "Paga este mês", cor: "#22c55e" };
+    }
+
+    if (new Date().getDate() > item.due_day) {
+      return { texto: "Atrasada", cor: "#ef4444" };
+    }
+
+    return { texto: "Pendente", cor: "#f59e0b" };
+  }
+
+  function calcularVencimento(item: FixedExpense) {
+    if (item.paid_this_month) {
+      return {
+        titulo: `Dia ${item.due_day}`,
+        detalhe: "Pago neste mês",
+        cor: "#22c55e",
+      };
+    }
+
+    const diferenca = item.due_day - new Date().getDate();
+
+    if (diferenca === 0) {
+      return {
+        titulo: `Dia ${item.due_day}`,
+        detalhe: "Vence hoje",
+        cor: "#f59e0b",
+      };
+    }
+
+    if (diferenca > 0) {
+      return {
+        titulo: `Dia ${item.due_day}`,
+        detalhe:
+          diferenca === 1
+            ? "Vence amanhã"
+            : `Vence em ${diferenca} dias`,
+        cor: "#94a3b8",
+      };
+    }
+
+    const atraso = Math.abs(diferenca);
+
+    return {
+      titulo: `Dia ${item.due_day}`,
+      detalhe:
+        atraso === 1
+          ? "Atrasada há 1 dia"
+          : `Atrasada há ${atraso} dias`,
+      cor: "#ef4444",
+    };
+  }
 
   return (
     <div style={{ padding: 30 }}>
@@ -244,61 +319,14 @@ export default function FixedExpenses() {
         </button>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 2fr",
-          gap: 20,
-          marginBottom: 20,
-        }}
-      >
-        <div
-          style={{
-            padding: 20,
-            border: "1px solid #1f2937",
-            borderRadius: 18,
-            background: "#111827",
-          }}
-        >
-          <span style={{ color: "#94a3b8" }}>Total mensal ativo</span>
+      <ExpenseSummaryCards
+        total={total}
+        pagas={resumo.pagas}
+        pendentes={resumo.pendentes}
+        atrasadas={resumo.atrasadas}
+      />
 
-          <h2
-            style={{
-              margin: "10px 0 0",
-              color: "#ef4444",
-            }}
-          >
-            {moeda(total)}
-          </h2>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "0 15px",
-            border: "1px solid #1f2937",
-            borderRadius: 18,
-            background: "#111827",
-          }}
-        >
-          <FiSearch color="#94a3b8" />
-
-          <input
-            placeholder="Buscar por descrição ou categoria..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            style={{
-              width: "100%",
-              border: 0,
-              outline: 0,
-              background: "transparent",
-              color: "white",
-            }}
-          />
-        </div>
-      </div>
+      <ExpenseSearch value={busca} onChange={setBusca} />
 
       {erro && !modalAberto && (
         <p
@@ -313,303 +341,46 @@ export default function FixedExpenses() {
         </p>
       )}
 
-      <div
-        style={{
-          overflowX: "auto",
-          border: "1px solid #1f2937",
-          borderRadius: 18,
-          background: "#111827",
+      <ExpenseTable
+        items={filtradas}
+        onPay={pagar}
+        onDetails={abrirDetalhes}
+        onEdit={abrirEdicao}
+        onDelete={excluir}
+        getStatus={calcularStatus}
+        getDueInfo={calcularVencimento}
+      />
+
+      <ExpenseFormModal
+        open={modalAberto}
+        editing={editandoId !== null}
+        description={description}
+        amount={amount}
+        category={category}
+        dueDay={dueDay}
+        recurrence={recurrence}
+        isActive={isActive}
+        error={erro}
+        saving={salvando}
+        categories={categorias}
+        onClose={fecharModal}
+        onSave={salvar}
+        onDescriptionChange={setDescription}
+        onAmountChange={setAmount}
+        onCategoryChange={setCategory}
+        onDueDayChange={setDueDay}
+        onRecurrenceChange={setRecurrence}
+        onActiveChange={setIsActive}
+      />
+
+      <ExpenseDetailsDrawer
+        open={drawerOpen}
+        expense={selectedExpense}
+        onClose={() => {
+          setDrawerOpen(false);
+          setSelectedExpense(null);
         }}
-      >
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-          }}
-        >
-          <thead>
-            <tr style={{ background: "#0f172a" }}>
-              <th style={{ padding: 15, textAlign: "left" }}>
-                Descrição
-              </th>
-              <th style={{ padding: 15, textAlign: "left" }}>
-                Categoria
-              </th>
-              <th style={{ padding: 15, textAlign: "left" }}>
-                Vencimento
-              </th>
-              <th style={{ padding: 15, textAlign: "left" }}>
-                Status
-              </th>
-              <th style={{ padding: 15, textAlign: "left" }}>
-                Valor
-              </th>
-              <th style={{ padding: 15, textAlign: "right" }}>
-                Ações
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {filtradas.map((item) => (
-              <tr
-                key={item.id}
-                style={{ borderTop: "1px solid #1f2937" }}
-              >
-                <td style={{ padding: 15 }}>
-                  {item.description}
-                </td>
-
-                <td style={{ padding: 15 }}>
-                  {item.category || "Outros"}
-                </td>
-
-                <td style={{ padding: 15 }}>
-                  Dia {item.due_day}
-                </td>
-
-                <td style={{ padding: 15 }}>
-                  {!item.is_active
-                    ? "Inativa"
-                    : item.paid_this_month
-                    ? "Paga este mês"
-                    : "Pendente"}
-                </td>
-
-                <td
-                  style={{
-                    padding: 15,
-                    color: "#ef4444",
-                    fontWeight: 700,
-                  }}
-                >
-                  {moeda(Number(item.amount))}
-                </td>
-
-                <td
-                  style={{
-                    padding: 15,
-                    textAlign: "right",
-                    whiteSpace: "nowrap",
-                  }}
-                  >
-                  <button
-                    onClick={() => pagar(item.id)}
-                    disabled={!item.is_active || item.paid_this_month}
-                    style={{
-                      marginRight: 8,
-                      background:
-                        !item.is_active || item.paid_this_month
-                          ? "#475569"
-                          : "#16a34a",
-                      cursor:
-                        !item.is_active || item.paid_this_month
-                          ? "not-allowed"
-                          : "pointer",
-                    }} 
-                    title={
-                      item.paid_this_month
-                        ? "Já foi paga neste mês"
-                        : "Marcar como paga"
-                    }
-                  >
-                    <FiCheck />
-                  </button>
-                                                                   
-                  <button
-                    onClick={() => abrirEdicao(item)}
-                    style={{
-                      marginRight: 8,
-                      background: "#2563eb",
-                    }}
-                    title="Editar"
-                  >
-                    <FiEdit2 />
-                  </button>
-
-                  <button
-                    onClick={() => excluir(item.id)}
-                    style={{ background: "#dc2626" }}
-                    title="Excluir"
-                  >
-                    <FiTrash2 />
-                  </button>
-                </td>
-              </tr>
-            ))}
-
-            {filtradas.length === 0 && (
-              <tr>
-                <td
-                  colSpan={6}
-                  style={{
-                    padding: 40,
-                    textAlign: "center",
-                    color: "#94a3b8",
-                  }}
-                >
-                  Nenhuma despesa fixa cadastrada.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {modalAberto && (
-        <div
-          onClick={fecharModal}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1000,
-            display: "grid",
-            placeItems: "center",
-            padding: 20,
-            background: "rgba(2, 6, 23, 0.78)",
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              width: "min(500px, 100%)",
-              padding: 26,
-              border: "1px solid #334155",
-              borderRadius: 22,
-              background: "#111827",
-              boxShadow: "0 30px 90px rgba(0,0,0,0.5)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 20,
-                marginBottom: 20,
-              }}
-            >
-              <div>
-                <h2 style={{ margin: 0 }}>
-                  {editandoId !== null
-                    ? "Editar despesa fixa"
-                    : "Nova despesa fixa"}
-                </h2>
-
-                <p style={{ color: "#94a3b8", marginBottom: 0 }}>
-                  Cadastre um gasto recorrente mensal.
-                </p>
-              </div>
-
-              <button
-                onClick={fecharModal}
-                style={{ background: "#334155" }}
-              >
-                <FiX />
-              </button>
-            </div>
-
-            <div style={{ display: "grid", gap: 14 }}>
-              <input
-                placeholder="Descrição"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-
-              <input
-                placeholder="Valor, exemplo: 150,00"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-              />
-
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
-                <option value="">Selecione a categoria</option>
-
-                {categorias.map((categoria) => (
-                  <option key={categoria} value={categoria}>
-                    {categoria}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                placeholder="Dia do vencimento"
-                inputMode="numeric"
-                value={dueDay}
-                onChange={(e) => setDueDay(e.target.value)}
-              />
-
-               <select
-                 value={recurrence}
-                 onChange={(e) => setRecurrence(e.target.value)}
-               >
-                 <option>Mensal</option>
-                 <option>Semanal</option>
-                 <option>Quinzenal</option>
-                 <option>Anual</option>
-               </select>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                />
-
-                Despesa ativa
-              </label>
-
-              {erro && (
-                <p
-                  style={{
-                    margin: 0,
-                    padding: 11,
-                    borderRadius: 10,
-                    background: "#7f1d1d",
-                    color: "white",
-                  }}
-                >
-                  {erro}
-                </p>
-              )}
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 10,
-                  marginTop: 8,
-                }}
-              >
-                <button
-                  onClick={fecharModal}
-                  style={{ background: "#334155" }}
-                >
-                  Cancelar
-                </button>
-
-                <button onClick={salvar} disabled={salvando}>
-                  {salvando
-                    ? "Salvando..."
-                    : editandoId !== null
-                    ? "Salvar alterações"
-                    : "Cadastrar despesa fixa"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      />
     </div>
   );
 }

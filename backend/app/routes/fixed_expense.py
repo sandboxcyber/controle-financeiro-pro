@@ -228,6 +228,82 @@ def pay_fixed_expense(
             detail="Essa despesa já foi paga neste mês",
         )
 
+@router.get("/upcoming")
+def upcoming_fixed_expenses(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    reference_month = current_reference_month()
+    today = datetime.now().day
+
+    fixed_expenses = (
+        db.query(FixedExpense)
+        .filter(
+            FixedExpense.user_id == current_user.id,
+            FixedExpense.is_active.is_(True),
+        )
+        .order_by(FixedExpense.due_day.asc())
+        .all()
+    )
+
+    paid_ids = {
+        payment.fixed_expense_id
+        for payment in (
+            db.query(FixedExpensePayment)
+            .filter(
+                FixedExpensePayment.user_id == current_user.id,
+                FixedExpensePayment.reference_month == reference_month,
+            )
+            .all()
+        )
+    }
+
+    result = []
+
+    for item in fixed_expenses:
+        if item.id in paid_ids:
+            continue
+
+        days_until_due = item.due_day - today
+
+        result.append(
+            {
+                "id": item.id,
+                "description": item.description,
+                "amount": item.amount,
+                "category": item.category,
+                "due_day": item.due_day,
+                "days_until_due": days_until_due,
+                "is_overdue": days_until_due < 0,
+            }
+        )
+
+    return result[:5]
+
+@router.get("/{fixed_expense_id}/history")
+def fixed_expense_history(
+    fixed_expense_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    pagamentos = (
+        db.query(FixedExpensePayment)
+        .filter(
+            FixedExpensePayment.fixed_expense_id == fixed_expense_id,
+            FixedExpensePayment.user_id == current_user.id,
+        )
+        .order_by(FixedExpensePayment.paid_at.desc())
+        .all()
+    )
+
+    return [
+        {
+            "id": pagamento.id,
+            "reference_month": pagamento.reference_month,
+            "paid_at": pagamento.paid_at,
+        }
+        for pagamento in pagamentos
+    ]   
 
 @router.delete("/{fixed_expense_id}")
 def delete_fixed_expense(

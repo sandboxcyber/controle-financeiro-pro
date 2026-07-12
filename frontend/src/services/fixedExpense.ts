@@ -12,6 +12,12 @@ export type FixedExpensePayload = {
 export const fixedExpenseService = {
   listar() {
     return api.get("/fixed-expenses/");
+  }, 
+  proximosVencimentos() {
+    return api.get("/fixed-expenses/upcoming");
+  }, 
+  historico(id: number) {
+    return api.get(`/fixed-expenses/${id}/history`);
   },
 
   criar(data: FixedExpensePayload) {
