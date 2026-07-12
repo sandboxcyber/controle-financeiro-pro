@@ -1,0 +1,2 @@
+import type { ReactNode } from "react";
+export default function PageHeader({title,subtitle,action}:{title:string;subtitle?:string;action?:ReactNode}){return <header style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:20,marginBottom:24}}><div><h1 style={{margin:0}}>{title}</h1>{subtitle&&<p style={{margin:"6px 0 0",color:"#94a3b8"}}>{subtitle}</p>}</div>{action}</header>}

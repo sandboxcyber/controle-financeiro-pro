@@ -1,0 +1,1 @@
+export default function EmptyState({title,description}:{title:string;description?:string}){return <div style={{padding:36,textAlign:"center",border:"1px dashed #334155",borderRadius:16,color:"#94a3b8"}}><strong style={{display:"block",color:"#cbd5e1"}}>{title}</strong>{description&&<span style={{display:"block",marginTop:6}}>{description}</span>}</div>}

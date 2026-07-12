@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/Login";
@@ -16,34 +16,32 @@ import Settings from "./pages/Settings";
 function App() {
   const token = localStorage.getItem("token");
 
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
+  if (!token) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
 
-      <Route
-        path="/*"
-        element={
-          token ? (
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/gastos-fixos" element={<FixedExpenses />} />
-                <Route path="/gastos-variaveis" element={<VariableExpenses />} />
-                <Route path="/cartoes" element={<Cards />} />
-                <Route path="/recebimentos" element={<Income />} />
-                <Route path="/cofrinhos" element={<Goals />} />
-                <Route path="/bancos" element={<Banks />} />
-                <Route path="/investimentos" element={<Investments />} />
-                <Route path="/ia" element={<AI />} />
-                <Route path="/configuracoes" element={<Settings />} />
-              </Routes>
-            </MainLayout>
-          ) : (
-            <Login />
-          )
-        }
-      />
-    </Routes>
+  return (
+    <MainLayout>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/gastos-fixos" element={<FixedExpenses />} />
+        <Route path="/gastos-variaveis" element={<VariableExpenses />} />
+        <Route path="/cartoes" element={<Cards />} />
+        <Route path="/recebimentos" element={<Income />} />
+        <Route path="/cofrinhos" element={<Goals />} />
+        <Route path="/bancos" element={<Banks />} />
+        <Route path="/investimentos" element={<Investments />} />
+        <Route path="/ia" element={<AI />} />
+        <Route path="/configuracoes" element={<Settings />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </MainLayout>
   );
 }
 
