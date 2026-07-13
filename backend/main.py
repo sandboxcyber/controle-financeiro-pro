@@ -5,6 +5,7 @@ from app.models.expense import Expense
 from app.models.fixed_expense import FixedExpense
 from app.models.fixed_expense_payment import FixedExpensePayment
 from app.routes.fixed_expense import router as fixed_expense_router
+from app.routes.cards import router as cards_router
 
 from app.database.database import Base, engine
 from app.models.user import User
@@ -45,6 +46,7 @@ app.include_router(income_router)
 app.include_router(expense_router)
 app.include_router(fixed_expense_router)
 app.include_router(ai_router)
+app.include_router(cards_router)
 
 @app.get("/")
 def home():
