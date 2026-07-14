@@ -12,6 +12,7 @@ import Banks from "./pages/Banks";
 import Investments from "./pages/Investments";
 import AI from "./pages/AI";
 import Settings from "./pages/Settings";
+import Reports from "./pages/Reports";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -37,6 +38,7 @@ function App() {
         <Route path="/bancos" element={<Banks />} />
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/ia" element={<AI />} />
+        <Route path="/relatorios" element={<Reports />} />
         <Route path="/configuracoes" element={<Settings />} />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,3 +1,5 @@
+from app.routes.backup import router as backup_router
+from app.routes.reports import router as reports_router
 from app.routes.finance import router as finance_router
 from app.routes.investments import router as investments_router
 from app.routes.goals import router as goals_router
@@ -105,3 +107,7 @@ app.include_router(goals_router)
 app.include_router(investments_router)
 
 app.include_router(finance_router)
+
+app.include_router(reports_router)
+
+app.include_router(backup_router)
