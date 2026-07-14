@@ -1,3 +1,7 @@
+from app.routes.finance import router as finance_router
+from app.routes.investments import router as investments_router
+from app.routes.goals import router as goals_router
+from app.routes.bank_accounts import router as bank_accounts_router
 from app.routes.ai import router as ai_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -94,3 +98,10 @@ def dashboard_resumo(
         "saldo": formatar_real(saldo),
         "falta_pagar": formatar_real(falta_pagar),
     }
+app.include_router(bank_accounts_router)
+
+app.include_router(goals_router)
+
+app.include_router(investments_router)
+
+app.include_router(finance_router)

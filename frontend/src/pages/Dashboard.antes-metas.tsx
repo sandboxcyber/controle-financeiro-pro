@@ -9,19 +9,12 @@ import {
 } from "react-icons/fi";
 
 import BalanceChart from "../components/BalanceChart";
-import FinanceCharts from "../components/FinanceCharts";
-import ForecastCard from "../components/ForecastCard";
-import FinancialAlerts from "../components/FinancialAlerts";
 
 import { api } from "../services/api";
 import { bankService, type BankAccount } from "../services/banks";
 import { cardService, type CardPayload } from "../services/cards";
 import { FINANCE_UPDATED_EVENT } from "../services/financeEvents";
 import { fixedExpenseService } from "../services/fixedExpense";
-import { financeOverviewService, type FinanceOverview } from "../services/financeOverview";
-import { forecastService, type FinancialForecast } from "../services/forecast";
-import { financialAlertsService, type FinancialAlert } from "../services/financialAlerts";
-import { goalService, type Goal } from "../services/goals";
 
 type Resumo = {
   receitas: string;
@@ -102,16 +95,8 @@ export default function Dashboard() {
 
   const [bancos, setBancos] = useState<BankAccount[]>([]);
   const [cartoes, setCartoes] = useState<CardItem[]>([]);
-  const [metas, setMetas] = useState<Goal[]>([]);
   const [proximos, setProximos] = useState<ProximoVencimento[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [overview, setOverview] =
-    useState<FinanceOverview | null>(null);
-  const [forecast, setForecast] =
-    useState<FinancialForecast | null>(null);
-  const [financialAlerts, setFinancialAlerts] =
-    useState<FinancialAlert[]>([]);
-
 
   async function carregarDashboard() {
     try {
@@ -121,30 +106,18 @@ export default function Dashboard() {
         resumoResposta,
         bancosResposta,
         cartoesResposta,
-        metasResposta,
         vencimentosResposta,
-        overviewResposta,
-        forecastResposta,
-        alertsResposta,
       ] = await Promise.all([
         api.get("/dashboard/resumo"),
         bankService.listar(),
         cardService.listar(),
-        goalService.listar(),
         fixedExpenseService.proximosVencimentos(),
-        financeOverviewService.carregar(),
-        forecastService.carregar(),
-        financialAlertsService.carregar(),
       ]);
 
       setResumo(resumoResposta.data);
       setBancos(bancosResposta.data);
       setCartoes(cartoesResposta.data);
-      setMetas(metasResposta.data);
       setProximos(vencimentosResposta.data);
-      setOverview(overviewResposta.data);
-      setForecast(forecastResposta.data);
-      setFinancialAlerts(alertsResposta.data.alerts);
     } catch (erro) {
       console.error("Erro ao carregar o Dashboard:", erro);
     } finally {
@@ -188,26 +161,13 @@ export default function Dashboard() {
       0
     );
 
-    const objetivoMetas = metas.reduce(
-      (soma, meta) => soma + Number(meta.target_amount),
-      0
-    );
-
-    const acumuladoMetas = metas.reduce(
-      (soma, meta) => soma + Number(meta.current_amount),
-      0
-    );
-
     return {
       saldoBancos,
       limiteCartoes,
       utilizadoCartoes,
       disponivelCartoes: limiteCartoes - utilizadoCartoes,
-      objetivoMetas,
-      acumuladoMetas,
-      faltaMetas: Math.max(objetivoMetas - acumuladoMetas, 0),
     };
-  }, [bancos, cartoes, metas]);
+  }, [bancos, cartoes]);
 
   const mostrar = (valor: string) =>
     carregando ? "Carregando..." : valor;
@@ -334,27 +294,6 @@ export default function Dashboard() {
         />
       </section>
 
-      {forecast && (
-        <ForecastCard forecast={forecast} />
-      )}
-
-      {financialAlerts.length > 0 && (
-        <FinancialAlerts alerts={financialAlerts} />
-      )}
-
-
-
-      {overview && (
-        <FinanceCharts
-          saldoBancos={overview.saldo_bancos}
-          investimentos={overview.investimentos}
-          cartoesUtilizado={overview.cartoes_utilizado}
-          cartoesDisponivel={overview.cartoes_disponivel}
-          receitas={overview.receitas}
-          despesas={overview.despesas}
-        />
-      )}
-
       <section className="grid gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
         <article className="min-w-0 rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
           <div className="mb-5 flex items-center justify-between gap-4">
@@ -407,119 +346,6 @@ export default function Dashboard() {
             />
           </div>
         </aside>
-      </section>
-
-      <section className="grid gap-5 xl:grid-cols-[1fr_1.4fr]">
-        <article className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">
-            Metas financeiras
-          </span>
-
-          <h2 className="mt-2 text-xl font-bold text-white">
-            Progresso geral
-          </h2>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-3 xl:grid-cols-1">
-            <ResumoItem
-              titulo="Objetivo total"
-              valor={moeda(dadosConsolidados.objetivoMetas)}
-              cor="text-blue-400"
-            />
-
-            <ResumoItem
-              titulo="Valor acumulado"
-              valor={moeda(dadosConsolidados.acumuladoMetas)}
-              cor="text-emerald-400"
-            />
-
-            <ResumoItem
-              titulo="Falta alcançar"
-              valor={moeda(dadosConsolidados.faltaMetas)}
-              cor="text-amber-400"
-            />
-          </div>
-        </article>
-
-        <article className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">
-                Seus objetivos
-              </span>
-
-              <h2 className="mt-2 text-xl font-bold text-white">
-                Metas em andamento
-              </h2>
-            </div>
-
-            <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-bold text-blue-400">
-              {metas.length} meta(s)
-            </span>
-          </div>
-
-          <div className="mt-5 space-y-4">
-            {metas.length === 0 ? (
-              <Empty text="Nenhuma meta cadastrada." />
-            ) : (
-              metas.slice(0, 4).map((meta) => {
-                const objetivo = Number(meta.target_amount);
-                const atual = Number(meta.current_amount);
-
-                const percentual =
-                  objetivo > 0
-                    ? Math.min((atual / objetivo) * 100, 100)
-                    : 0;
-
-                return (
-                  <div
-                    key={meta.id}
-                    className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <div
-                          className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-lg"
-                          style={{
-                            background: `${meta.color}1f`,
-                          }}
-                        >
-                          {meta.icon}
-                        </div>
-
-                        <div className="min-w-0">
-                          <strong className="block truncate text-sm text-white">
-                            {meta.name}
-                          </strong>
-
-                          <span className="mt-1 block text-xs text-slate-500">
-                            {moeda(atual)} de {moeda(objetivo)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <strong
-                        className="shrink-0 text-sm font-black"
-                        style={{ color: meta.color }}
-                      >
-                        {percentual.toFixed(0)}%
-                      </strong>
-                    </div>
-
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-800">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${percentual}%`,
-                          background: meta.color,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </article>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[1.2fr_1fr]">
