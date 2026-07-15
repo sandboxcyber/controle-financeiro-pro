@@ -1,3 +1,15 @@
+from app.routes.portfolio_refresh import router as portfolio_refresh_router
+from app.routes.market_update import router as market_update_router
+from app.routes.portfolio import router as portfolio_router
+from app.routes.search_market import router as search_market_router
+from app.routes.market import router as market_router
+from app.routes.financial_score import router as financial_score_router
+from app.routes.emergency_fund import router as emergency_router
+from app.routes.notifications import router as notifications_router
+from app.routes.bills import router as bills_router
+from app.routes.installments import router as installments_router
+from app.routes.budgets import router as budgets_router
+from app.routes.imports import router as imports_router
 from app.routes.backup import router as backup_router
 from app.routes.reports import router as reports_router
 from app.routes.finance import router as finance_router
@@ -111,3 +123,27 @@ app.include_router(finance_router)
 app.include_router(reports_router)
 
 app.include_router(backup_router)
+
+app.include_router(imports_router)
+
+app.include_router(budgets_router)
+
+app.include_router(installments_router)
+
+app.include_router(bills_router)
+
+app.include_router(notifications_router)
+
+app.include_router(emergency_router)
+
+app.include_router(financial_score_router)
+
+app.include_router(market_router)
+
+app.include_router(search_market_router)
+
+app.include_router(portfolio_router)
+
+app.include_router(market_update_router)
+
+app.include_router(portfolio_refresh_router)

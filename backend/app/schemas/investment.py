@@ -8,9 +8,9 @@ class InvestmentBase(BaseModel):
     ticker: str = ""
     category: str = "Outros"
     institution: str = ""
-    quantity: float = Field(ge=0)
-    average_price: float = Field(ge=0)
-    current_price: float = Field(ge=0)
+    quantity: float = Field(default=0, ge=0)
+    average_price: float = Field(default=0, ge=0)
+    current_price: float = Field(default=0, ge=0)
     color: str = "#2563eb"
 
 

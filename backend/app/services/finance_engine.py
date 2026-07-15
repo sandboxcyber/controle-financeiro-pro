@@ -1,88 +1,130 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.models.bank_account import BankAccount
 from app.models.card import Card
 from app.models.expense import Expense
-from app.models.income import Income
-from app.models.investment import Investment
 from app.models.goal import Goal
+from app.models.income import Income
 
 
 class FinanceEngine:
-
     def __init__(self, db: Session):
         self.db = db
 
-    def saldo_bancos(self, user_id: int):
-        return sum(
-            float(x.balance or 0)
-            for x in self.db.query(BankAccount)
+    def saldo_bancos(self, user_id: int) -> float:
+        contas = (
+            self.db.query(BankAccount)
             .filter(BankAccount.user_id == user_id)
             .all()
         )
 
-    def receitas(self, user_id: int):
         return sum(
-            float(x.amount or 0)
-            for x in self.db.query(Income)
+            float(conta.balance or 0)
+            for conta in contas
+        )
+
+    def receitas(self, user_id: int) -> float:
+        receitas = (
+            self.db.query(Income)
             .filter(Income.user_id == user_id)
             .all()
         )
 
-    def despesas(self, user_id: int):
         return sum(
-            float(x.amount or 0)
-            for x in self.db.query(Expense)
+            float(receita.amount or 0)
+            for receita in receitas
+        )
+
+    def despesas(self, user_id: int) -> float:
+        despesas = (
+            self.db.query(Expense)
             .filter(Expense.user_id == user_id)
             .all()
         )
 
-    def limite_total_cartoes(self, user_id: int):
         return sum(
-            float(x.limit or 0)
-            for x in self.db.query(Card)
+            float(despesa.amount or 0)
+            for despesa in despesas
+        )
+
+    def limite_total_cartoes(self, user_id: int) -> float:
+        cartoes = (
+            self.db.query(Card)
             .filter(Card.user_id == user_id)
             .all()
         )
 
-    def utilizado_cartoes(self, user_id: int):
         return sum(
-            float(x.used or 0)
-            for x in self.db.query(Card)
+            float(cartao.limit or 0)
+            for cartao in cartoes
+        )
+
+    def utilizado_cartoes(self, user_id: int) -> float:
+        cartoes = (
+            self.db.query(Card)
             .filter(Card.user_id == user_id)
             .all()
         )
 
-    def patrimonio_investimentos(self, user_id: int):
         return sum(
-            float(x.quantity or 0)
-            * float(x.current_price or 0)
-            for x in self.db.query(Investment)
-            .filter(Investment.user_id == user_id)
-            .all()
+            float(cartao.used or 0)
+            for cartao in cartoes
         )
 
-    def metas(self, user_id: int):
-        atual = 0
-        objetivo = 0
+    def patrimonio_investimentos(self, user_id: int) -> float:
+        resultado = self.db.execute(
+            text(
+                """
+                SELECT COALESCE(
+                    SUM(
+                        CASE
+                            WHEN current_amount IS NOT NULL
+                                 AND current_amount > 0
+                            THEN current_amount
 
-        for meta in (
+                            WHEN quantity IS NOT NULL
+                                 AND current_price IS NOT NULL
+                            THEN quantity * current_price
+
+                            ELSE 0
+                        END
+                    ),
+                    0
+                )
+                FROM investments
+                WHERE user_id = :user_id
+                """
+            ),
+            {"user_id": user_id},
+        ).scalar()
+
+        return float(resultado or 0)
+
+    def metas(self, user_id: int) -> dict:
+        metas = (
             self.db.query(Goal)
             .filter(Goal.user_id == user_id)
             .all()
-        ):
-            atual += float(meta.current_amount or 0)
-            objetivo += float(meta.target_amount or 0)
+        )
+
+        atual = sum(
+            float(meta.current_amount or 0)
+            for meta in metas
+        )
+
+        objetivo = sum(
+            float(meta.target_amount or 0)
+            for meta in metas
+        )
 
         return {
             "atual": atual,
             "objetivo": objetivo,
         }
 
-    def patrimonio_total(self, user_id: int):
-
-        bancos = self.saldo_bancos(user_id)
-
-        investimentos = self.patrimonio_investimentos(user_id)
-
-        return bancos + investimentos
+    def patrimonio_total(self, user_id: int) -> float:
+        return (
+            self.saldo_bancos(user_id)
+            + self.patrimonio_investimentos(user_id)
+        )

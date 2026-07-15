@@ -5,6 +5,7 @@ from app.core.dependencies import get_current_user
 from app.database.database import get_db
 from app.models.user import User
 from app.services.finance_engine import FinanceEngine
+from app.services.budget_summary import resumo_orcamentos
 from app.services.forecast import gerar_previsao
 from app.services.financial_alerts import gerar_alertas
 
@@ -35,6 +36,11 @@ def overview(
 
     patrimonio = engine.patrimonio_total(current_user.id)
 
+    orcamentos = resumo_orcamentos(
+        db=db,
+        user_id=current_user.id,
+    )
+
     return {
         "receitas": receitas,
         "despesas": despesas,
@@ -54,6 +60,7 @@ def overview(
         "patrimonio_total": patrimonio,
 
         "metas": metas,
+        "orcamentos": orcamentos,
     }
 
 
