@@ -10,6 +10,11 @@ import {
 } from "react-icons/fi";
 
 import {
+  marketService,
+  type MarketSearchResult,
+} from "../services/market";
+
+import {
   investmentService,
   type Investment,
   type InvestmentPayload,
@@ -34,8 +39,18 @@ export default function Investments() {
   const [averagePrice, setAveragePrice] = useState("");
   const [currentPrice, setCurrentPrice] = useState("");
   const [color, setColor] = useState("#2563eb");
+  const [currency, setCurrency] = useState("BRL");
+  const [exchange, setExchange] = useState("");
+  const [exchangeRate, setExchangeRate] = useState(1);
+  const [priceBrl, setPriceBrl] = useState(0);
 
   const [erro, setErro] = useState("");
+
+const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
+  const [searchingAsset, setSearchingAsset] = useState(false);
+  const [showAssetResults, setShowAssetResults] = useState(false);
+
+
   const [salvando, setSalvando] = useState(false);
 
   async function carregar() {
@@ -50,6 +65,70 @@ export default function Investments() {
   useEffect(() => {
     carregar();
   }, []);
+
+  async function pesquisarAtivo(valor: string) {
+    setTicker(valor);
+    setShowAssetResults(true);
+
+    if (valor.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setSearchingAsset(true);
+
+      const resposta = await marketService.search(valor.trim());
+
+      setSearchResults(resposta.data);
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearchingAsset(false);
+    }
+  }
+
+  
+  async function selecionarAtivo(ativo: MarketSearchResult) {
+
+    try {
+
+      const cotacao = await marketService.asset(ativo.symbol);
+
+      setTicker(ativo.symbol);
+      setName(cotacao.data.name || ativo.name || ativo.symbol);
+
+      setCurrentPrice(
+        String(cotacao.data.price).replace(".", ",")
+      );
+
+      setCurrency(cotacao.data.currency || "BRL");
+      setExchange(ativo.exchange || "");
+      setExchangeRate(Number(cotacao.data.exchange_rate || 1));
+      setPriceBrl(Number(cotacao.data.price_brl || cotacao.data.price));
+
+      const tipo = (ativo.type || "").toUpperCase();
+
+      if (
+        tipo.includes("CRYPTO") ||
+        ativo.symbol.includes("-USD")
+      ) {
+        setCategory("Criptomoedas");
+      } else if (tipo.includes("ETF")) {
+        setCategory("ETF");
+      } else {
+        setCategory("Ações");
+      }
+
+      setSearchResults([]);
+      setShowAssetResults(false);
+
+    } catch (e) {
+      console.error(e);
+    }
+
+  }
+
 
   function numero(valor: string) {
     return Number(
@@ -93,6 +172,10 @@ export default function Investments() {
     setAveragePrice("");
     setCurrentPrice("");
     setColor("#2563eb");
+    setCurrency("BRL");
+    setExchange("");
+    setExchangeRate(1);
+    setPriceBrl(0);
     setErro("");
     setModalAberto(true);
   }
@@ -430,12 +513,62 @@ export default function Investments() {
                   onChange={setName}
                 />
 
-                <Campo
-                  label="Código ou ticker"
-                  placeholder="Exemplo: PETR4"
-                  value={ticker}
-                  onChange={setTicker}
-                />
+                <label className="relative block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-300">
+                    Pesquisar ativo
+                  </span>
+
+                  <input
+                    placeholder="Digite PETR4, Apple, AAPL, Bitcoin..."
+                    value={ticker}
+                    onChange={(event) =>
+                      pesquisarAtivo(event.target.value)
+                    }
+                    onFocus={() => setShowAssetResults(true)}
+                    autoComplete="off"
+                    className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none placeholder:text-slate-700 focus:border-blue-500"
+                  />
+
+                  {searchingAsset && (
+                    <span className="mt-2 block text-xs text-blue-400">
+                      Pesquisando ativos...
+                    </span>
+                  )}
+
+                  {showAssetResults &&
+                    searchResults.length > 0 && (
+                      <div className="absolute left-0 right-0 top-[78px] z-[1700] max-h-72 overflow-y-auto rounded-2xl border border-slate-700 bg-slate-950 p-2 shadow-2xl">
+                        {searchResults.map((ativo, index) => (
+                          <button
+                            key={`${ativo.symbol}-${index}`}
+                            type="button"
+                            onClick={() => selecionarAtivo(ativo)}
+                            className="flex w-full items-center justify-between gap-4 rounded-xl px-4 py-3 text-left transition hover:bg-slate-800"
+                          >
+                            <div className="min-w-0">
+                              <strong className="block truncate text-sm text-white">
+                                {ativo.symbol}
+                              </strong>
+
+                              <span className="mt-1 block truncate text-xs text-slate-500">
+                                {ativo.name || "Ativo financeiro"}
+                              </span>
+                            </div>
+
+                            <div className="shrink-0 text-right">
+                              <span className="block text-xs font-bold text-blue-400">
+                                {ativo.exchange || "Mercado"}
+                              </span>
+
+                              <span className="mt-1 block text-[10px] text-slate-600">
+                                {ativo.type || "Ativo"}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                </label>
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-300">
@@ -486,6 +619,52 @@ export default function Investments() {
                   value={currentPrice}
                   onChange={setCurrentPrice}
                 />
+
+                {ticker && currentPrice && (
+                  <div className="grid gap-3 rounded-2xl border border-slate-700 bg-slate-950/70 p-4 sm:grid-cols-2">
+                    <div>
+                      <span className="text-xs uppercase tracking-wider text-slate-600">
+                        Moeda
+                      </span>
+
+                      <strong className="mt-1 block text-sm text-white">
+                        {currency}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="text-xs uppercase tracking-wider text-slate-600">
+                        Bolsa
+                      </span>
+
+                      <strong className="mt-1 block text-sm text-white">
+                        {exchange || "Não informado"}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="text-xs uppercase tracking-wider text-slate-600">
+                        Cotação do dólar
+                      </span>
+
+                      <strong className="mt-1 block text-sm text-emerald-400">
+                        {currency === "BRL"
+                          ? "Não se aplica"
+                          : moeda(exchangeRate)}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span className="text-xs uppercase tracking-wider text-slate-600">
+                        Preço em reais
+                      </span>
+
+                      <strong className="mt-1 block text-sm text-blue-400">
+                        {moeda(priceBrl)}
+                      </strong>
+                    </div>
+                  </div>
+                )}
 
                 <label className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300">
                   Cor do investimento

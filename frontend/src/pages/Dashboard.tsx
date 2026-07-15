@@ -345,6 +345,48 @@ export default function Dashboard() {
 
 
       {overview && (
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            title="Orçamentos definidos"
+            value={moeda(overview.orcamentos.total_limites)}
+            subtitle={`${overview.orcamentos.categorias} categoria(s)`}
+            icon={<FiDollarSign />}
+            color="#3b82f6"
+          />
+
+          <MetricCard
+            title="Gasto nos orçamentos"
+            value={moeda(overview.orcamentos.total_gasto)}
+            subtitle="Total utilizado no mês"
+            icon={<FiArrowDownRight />}
+            color="#ef4444"
+          />
+
+          <MetricCard
+            title="Disponível nos orçamentos"
+            value={moeda(
+              Math.max(
+                overview.orcamentos.total_limites -
+                  overview.orcamentos.total_gasto,
+                0
+              )
+            )}
+            subtitle="Valor ainda disponível"
+            icon={<FiTrendingUp />}
+            color="#22c55e"
+          />
+
+          <MetricCard
+            title="Categorias em alerta"
+            value={String(overview.orcamentos.alertas)}
+            subtitle="Acima de 80% do limite"
+            icon={<FiCreditCard />}
+            color="#f59e0b"
+          />
+        </section>
+      )}
+
+      {overview && (
         <FinanceCharts
           saldoBancos={overview.saldo_bancos}
           investimentos={overview.investimentos}

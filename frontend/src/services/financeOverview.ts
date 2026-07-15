@@ -14,6 +14,13 @@ export type FinanceOverview = {
     atual: number;
     objetivo: number;
   };
+
+  orcamentos: {
+    total_limites: number;
+    total_gasto: number;
+    categorias: number;
+    alertas: number;
+  };
 };
 
 export const financeOverviewService = {

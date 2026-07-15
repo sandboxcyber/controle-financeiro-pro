@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   FiBarChart2, FiBriefcase, FiCpu, FiCreditCard, FiDollarSign,
-  FiFileText, FiHome, FiSettings, FiTarget, FiTrendingDown, FiTrendingUp
+  FiFileText, FiHome, FiUploadCloud, FiSettings, FiTarget, FiTrendingDown, FiTrendingUp
 } from "react-icons/fi";
 
 const menu = [
@@ -12,9 +12,13 @@ const menu = [
   { name: "Cartões", path: "/cartoes", icon: FiCreditCard },
   { name: "Bancos", path: "/bancos", icon: FiBriefcase },
   { name: "Metas", path: "/cofrinhos", icon: FiTarget },
+  { name: "Orçamentos", path: "/orcamentos", icon: FiTarget },
+  { name: "Contas a pagar", path: "/contas", icon: FiFileText },
+  { name: "Calendário", path: "/calendario", icon: FiFileText },
   { name: "Investimentos", path: "/investimentos", icon: FiDollarSign },
   { name: "Vera IA", path: "/ia", icon: FiCpu },
   { name: "Relatórios", path: "/relatorios", icon: FiFileText },
+  { name: "Importar extrato", path: "/importar", icon: FiUploadCloud },
   { name: "Configurações", path: "/configuracoes", icon: FiSettings },
 ];
 
