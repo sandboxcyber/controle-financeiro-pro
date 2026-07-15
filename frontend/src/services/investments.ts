@@ -33,4 +33,12 @@ export const investmentService = {
   excluir(id: number) {
     return api.delete(`/investments/${id}`);
   },
+
+  atualizarCotacao(id: number) {
+    return api.put(`/market/investment/${id}/refresh`);
+  },
+
+  atualizarCarteira() {
+    return api.put("/portfolio/refresh");
+  },
 };

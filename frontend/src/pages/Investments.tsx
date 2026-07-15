@@ -3,6 +3,7 @@ import {
   FiEdit2,
   FiPieChart,
   FiPlus,
+  FiRefreshCw,
   FiTrash2,
   FiTrendingDown,
   FiTrendingUp,
@@ -43,6 +44,7 @@ export default function Investments() {
   const [exchange, setExchange] = useState("");
   const [exchangeRate, setExchangeRate] = useState(1);
   const [priceBrl, setPriceBrl] = useState(0);
+  const [marketLocked, setMarketLocked] = useState(false);
 
   const [erro, setErro] = useState("");
 
@@ -52,6 +54,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
 
 
   const [salvando, setSalvando] = useState(false);
+  const [atualizandoCarteira, setAtualizandoCarteira] = useState(false);
 
   async function carregar() {
     try {
@@ -106,6 +109,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
       setExchange(ativo.exchange || "");
       setExchangeRate(Number(cotacao.data.exchange_rate || 1));
       setPriceBrl(Number(cotacao.data.price_brl || cotacao.data.price));
+      setMarketLocked(true);
 
       const tipo = (ativo.type || "").toUpperCase();
 
@@ -176,6 +180,8 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
     setExchange("");
     setExchangeRate(1);
     setPriceBrl(0);
+    setMarketLocked(false);
+    setMarketLocked(false);
     setErro("");
     setModalAberto(true);
   }
@@ -252,6 +258,30 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
     }
   }
 
+
+  async function atualizarCarteira() {
+    try {
+      setAtualizandoCarteira(true);
+      setErro("");
+
+      await investmentService.atualizarCarteira();
+      await carregar();
+    } catch {
+      setErro("Não foi possível atualizar a carteira.");
+    } finally {
+      setAtualizandoCarteira(false);
+    }
+  }
+
+  async function atualizarCotacao(id: number) {
+    try {
+      await investmentService.atualizarCotacao(id);
+      await carregar();
+    } catch {
+      setErro("Não foi possível atualizar a cotação.");
+    }
+  }
+
   async function excluir(id: number) {
     if (!window.confirm("Deseja excluir este investimento?")) {
       return;
@@ -282,13 +312,26 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
           </p>
         </div>
 
-        <button
-          onClick={abrirNovo}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
-        >
-          <FiPlus />
-          Novo investimento
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            onClick={atualizarCarteira}
+            disabled={atualizandoCarteira}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/10 px-5 py-3 text-sm font-bold text-blue-300 hover:bg-blue-500/20 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <FiRefreshCw className={atualizandoCarteira ? "animate-spin" : ""} />
+            {atualizandoCarteira
+              ? "Atualizando carteira..."
+              : "Atualizar carteira"}
+          </button>
+
+          <button
+            onClick={abrirNovo}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-500"
+          >
+            <FiPlus />
+            Novo investimento
+          </button>
+        </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -368,6 +411,14 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                 </div>
 
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => atualizarCotacao(item.id)}
+                    title="Atualizar cotação"
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20"
+                  >
+                    <FiRefreshCw />
+                  </button>
+
                   <button
                     onClick={() => abrirEdicao(item)}
                     className="grid h-9 w-9 place-items-center rounded-xl bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"
@@ -510,6 +561,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                   label="Nome"
                   placeholder="Exemplo: Petrobras"
                   value={name}
+                  disabled={marketLocked}
                   onChange={setName}
                 />
 
@@ -617,6 +669,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                   label="Preço atual"
                   placeholder="Exemplo: 35,80"
                   value={currentPrice}
+                  disabled={marketLocked}
                   onChange={setCurrentPrice}
                 />
 
@@ -757,11 +810,13 @@ function Campo({
   placeholder,
   value,
   onChange,
+  disabled = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="block">
@@ -772,8 +827,9 @@ function Campo({
       <input
         placeholder={placeholder}
         value={value}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none placeholder:text-slate-700 focus:border-blue-500"
+        className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none placeholder:text-slate-700 focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-500"
       />
     </label>
   );
