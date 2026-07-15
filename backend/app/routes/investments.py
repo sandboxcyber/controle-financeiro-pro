@@ -17,6 +17,7 @@ router = APIRouter(
 )
 
 
+
 def buscar_investimento(
     investment_id: int,
     user_id: int,

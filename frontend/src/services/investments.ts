@@ -9,6 +9,10 @@ export type InvestmentPayload = {
   average_price: number;
   current_price: number;
   color: string;
+  asset_type: string;
+  exchange: string;
+  currency: string;
+  current_exchange_rate: number;
 };
 
 export type Investment = InvestmentPayload & {
@@ -27,7 +31,10 @@ export const investmentService = {
   },
 
   editar(id: number, data: InvestmentPayload) {
-    return api.put<Investment>(`/investments/${id}`, data);
+    return api.put<Investment>(
+      `/investments/${id}`,
+      data
+    );
   },
 
   excluir(id: number) {
@@ -35,7 +42,9 @@ export const investmentService = {
   },
 
   atualizarCotacao(id: number) {
-    return api.put(`/market/investment/${id}/refresh`);
+    return api.put<Investment>(
+      `/market/investment/${id}/refresh`
+    );
   },
 
   atualizarCarteira() {

@@ -21,24 +21,11 @@ import {
   type InvestmentPayload,
 } from "../services/investments";
 
-const dinheiro = (
-  valor: number,
-  currency = "BRL"
-) =>
+const moeda = (valor: number) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
-    currency,
+    currency: "BRL",
   }).format(valor);
-
-const converterParaReal = (
-  valor: number,
-  currency: string,
-  exchangeRate: number
-) =>
-  currency === "USD"
-    ? valor * exchangeRate
-    : valor;
-
 
 export default function Investments() {
   const [investimentos, setInvestimentos] = useState<Investment[]>([]);
@@ -56,6 +43,7 @@ export default function Investments() {
   const [currency, setCurrency] = useState("BRL");
   const [exchange, setExchange] = useState("");
   const [exchangeRate, setExchangeRate] = useState(1);
+  const [priceBrl, setPriceBrl] = useState(0);
   const [marketLocked, setMarketLocked] = useState(false);
 
   const [erro, setErro] = useState("");
@@ -67,7 +55,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
 
   const [salvando, setSalvando] = useState(false);
   const [atualizandoCarteira, setAtualizandoCarteira] = useState(false);
-  const [visaoResumo, setVisaoResumo] = useState<"brl" | "moedas">("brl");
 
   async function carregar() {
     try {
@@ -121,6 +108,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
       setCurrency(cotacao.data.currency || "BRL");
       setExchange(ativo.exchange || "");
       setExchangeRate(Number(cotacao.data.exchange_rate || 1));
+      setPriceBrl(Number(cotacao.data.price_brl || cotacao.data.price));
       setMarketLocked(true);
 
       const tipo = (ativo.type || "").toUpperCase();
@@ -146,47 +134,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
   }
 
 
-  function trocarMoedaInvestimento(novaMoeda: string) {
-    if (novaMoeda === currency) {
-      return;
-    }
-
-    const precoMedioAtual = numero(averagePrice || "0");
-    const precoMercadoAtual = numero(currentPrice || "0");
-    const cambio = Number(exchangeRate || 1);
-
-    if (!Number.isFinite(cambio) || cambio <= 0) {
-      setErro("Informe uma cotação do dólar válida.");
-      return;
-    }
-
-    if (currency === "USD" && novaMoeda === "BRL") {
-      setAveragePrice(
-        String(precoMedioAtual * cambio).replace(".", ",")
-      );
-
-      setCurrentPrice(
-        String(precoMercadoAtual * cambio).replace(".", ",")
-      );
-
-    }
-
-    if (currency === "BRL" && novaMoeda === "USD") {
-      setAveragePrice(
-        String(precoMedioAtual / cambio).replace(".", ",")
-      );
-
-      setCurrentPrice(
-        String(precoMercadoAtual / cambio).replace(".", ",")
-      );
-
-    }
-
-    setCurrency(novaMoeda);
-
-    setErro("");
-  }
-
   function numero(valor: string) {
     return Number(
       valor.replace(/\./g, "").replace(",", ".")
@@ -194,70 +141,29 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
   }
 
   const resumo = useMemo(() => {
-    const base = {
-      brl: {
-        investido: 0,
-        atual: 0,
-        resultado: 0,
-      },
-      usd: {
-        investido: 0,
-        atual: 0,
-        resultado: 0,
-      },
-      totalBrl: {
-        investido: 0,
-        atual: 0,
-        resultado: 0,
-        percentual: 0,
-      },
+    const investido = investimentos.reduce(
+      (soma, item) =>
+        soma + Number(item.quantity) * Number(item.average_price),
+      0
+    );
+
+    const atual = investimentos.reduce(
+      (soma, item) =>
+        soma + Number(item.quantity) * Number(item.current_price),
+      0
+    );
+
+    const resultado = atual - investido;
+
+    const percentual =
+      investido > 0 ? (resultado / investido) * 100 : 0;
+
+    return {
+      investido,
+      atual,
+      resultado,
+      percentual,
     };
-
-    investimentos.forEach((item) => {
-      const quantidade = Number(item.quantity || 0);
-      const precoMedio = Number(item.average_price || 0);
-      const precoAtual = Number(item.current_price || 0);
-      const moedaItem = item.currency || "BRL";
-      const cambio = Number(item.current_exchange_rate || 1);
-
-      const investidoOriginal = quantidade * precoMedio;
-      const atualOriginal = quantidade * precoAtual;
-      const resultadoOriginal = atualOriginal - investidoOriginal;
-
-      if (moedaItem === "USD") {
-        base.usd.investido += investidoOriginal;
-        base.usd.atual += atualOriginal;
-        base.usd.resultado += resultadoOriginal;
-      } else {
-        base.brl.investido += investidoOriginal;
-        base.brl.atual += atualOriginal;
-        base.brl.resultado += resultadoOriginal;
-      }
-
-      const investidoBrl =
-        moedaItem === "USD"
-          ? investidoOriginal * cambio
-          : investidoOriginal;
-
-      const atualBrl =
-        moedaItem === "USD"
-          ? atualOriginal * cambio
-          : atualOriginal;
-
-      base.totalBrl.investido += investidoBrl;
-      base.totalBrl.atual += atualBrl;
-      base.totalBrl.resultado += atualBrl - investidoBrl;
-    });
-
-    base.totalBrl.percentual =
-      base.totalBrl.investido > 0
-        ? (
-            base.totalBrl.resultado /
-            base.totalBrl.investido
-          ) * 100
-        : 0;
-
-    return base;
   }, [investimentos]);
 
   function abrirNovo() {
@@ -273,6 +179,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
     setCurrency("BRL");
     setExchange("");
     setExchangeRate(1);
+    setPriceBrl(0);
     setMarketLocked(false);
     setMarketLocked(false);
     setErro("");
@@ -281,7 +188,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
 
   function abrirEdicao(item: Investment) {
     setEditandoId(item.id);
-    setMarketLocked(false);
     setName(item.name);
     setTicker(item.ticker);
     setCategory(item.category);
@@ -290,11 +196,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
     setAveragePrice(String(item.average_price).replace(".", ","));
     setCurrentPrice(String(item.current_price).replace(".", ","));
     setColor(item.color);
-    setCurrency(item.currency || "BRL");
-    setExchange(item.exchange || "");
-    setExchangeRate(
-      Number(item.current_exchange_rate || 1)
-    );
     setErro("");
     setModalAberto(true);
   }
@@ -333,14 +234,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
       average_price: precoMedio,
       current_price: precoAtual,
       color,
-      asset_type:
-        category === "Criptomoedas"
-          ? "crypto"
-          : "stock",
-      exchange,
-      currency,
-      current_exchange_rate:
-        Number(exchangeRate || 1),
     };
 
     try {
@@ -397,16 +290,8 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
     try {
       await investmentService.excluir(id);
       await carregar();
-    } catch (error: any) {
-      const detalhe = error?.response?.data?.detail;
-
-      setErro(
-        typeof detalhe === "string"
-          ? detalhe
-          : "Não foi possível excluir o investimento."
-      );
-
-      console.error("Erro ao excluir investimento:", error);
+    } catch {
+      setErro("Não foi possível excluir o investimento.");
     }
   }
 
@@ -449,121 +334,39 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
         </div>
       </header>
 
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-sm font-semibold text-slate-400">
-            Visualização da carteira
-          </span>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Resumo
+          titulo="Total investido"
+          valor={moeda(resumo.investido)}
+          cor="text-blue-400"
+        />
 
-          <div className="flex rounded-xl border border-slate-800 bg-slate-900 p-1">
-            <button
-              onClick={() => setVisaoResumo("brl")}
-              className={
-                visaoResumo === "brl"
-                  ? "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white"
-                  : "rounded-lg px-4 py-2 text-sm font-bold text-slate-400 hover:text-white"
-              }
-            >
-              Total em reais
-            </button>
+        <Resumo
+          titulo="Patrimônio atual"
+          valor={moeda(resumo.atual)}
+          cor="text-emerald-400"
+        />
 
-            <button
-              onClick={() => setVisaoResumo("moedas")}
-              className={
-                visaoResumo === "moedas"
-                  ? "rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white"
-                  : "rounded-lg px-4 py-2 text-sm font-bold text-slate-400 hover:text-white"
-              }
-            >
-              Separado por moeda
-            </button>
-          </div>
-        </div>
+        <Resumo
+          titulo="Resultado"
+          valor={moeda(resumo.resultado)}
+          cor={
+            resumo.resultado >= 0
+              ? "text-emerald-400"
+              : "text-red-400"
+          }
+        />
 
-        {visaoResumo === "brl" ? (
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <Resumo
-              titulo="Total investido"
-              valor={dinheiro(resumo.totalBrl.investido)}
-              cor="text-blue-400"
-            />
-
-            <Resumo
-              titulo="Patrimônio atual"
-              valor={dinheiro(resumo.totalBrl.atual)}
-              cor="text-emerald-400"
-            />
-
-            <Resumo
-              titulo="Resultado"
-              valor={dinheiro(resumo.totalBrl.resultado)}
-              cor={
-                resumo.totalBrl.resultado >= 0
-                  ? "text-emerald-400"
-                  : "text-red-400"
-              }
-            />
-
-            <Resumo
-              titulo="Rentabilidade"
-              valor={`${resumo.totalBrl.percentual.toFixed(2)}%`}
-              cor={
-                resumo.totalBrl.percentual >= 0
-                  ? "text-emerald-400"
-                  : "text-red-400"
-              }
-            />
-          </section>
-        ) : (
-          <section className="grid gap-4 xl:grid-cols-2">
-            <article className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">
-                Carteira em reais
-              </span>
-
-              <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                <Info
-                  titulo="Investido"
-                  valor={dinheiro(resumo.brl.investido, "BRL")}
-                />
-
-                <Info
-                  titulo="Patrimônio"
-                  valor={dinheiro(resumo.brl.atual, "BRL")}
-                />
-
-                <Info
-                  titulo="Resultado"
-                  valor={dinheiro(resumo.brl.resultado, "BRL")}
-                />
-              </div>
-            </article>
-
-            <article className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-violet-400">
-                Carteira em dólar
-              </span>
-
-              <div className="mt-5 grid gap-4 sm:grid-cols-3">
-                <Info
-                  titulo="Investido"
-                  valor={dinheiro(resumo.usd.investido, "USD")}
-                />
-
-                <Info
-                  titulo="Patrimônio"
-                  valor={dinheiro(resumo.usd.atual, "USD")}
-                />
-
-                <Info
-                  titulo="Resultado"
-                  valor={dinheiro(resumo.usd.resultado, "USD")}
-                />
-              </div>
-            </article>
-          </section>
-        )}
-      </div>
+        <Resumo
+          titulo="Rentabilidade"
+          valor={`${resumo.percentual.toFixed(2)}%`}
+          cor={
+            resumo.percentual >= 0
+              ? "text-emerald-400"
+              : "text-red-400"
+          }
+        />
+      </section>
 
       {erro && !modalAberto && (
         <div className="rounded-xl border border-red-900/60 bg-red-950/50 p-3 text-sm text-red-300">
@@ -573,33 +376,16 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
 
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {investimentos.map((item) => {
-          const investidoOriginal =
+          const investido =
             Number(item.quantity) * Number(item.average_price);
 
-          const atualOriginal =
+          const atual =
             Number(item.quantity) * Number(item.current_price);
-
-          const investido = converterParaReal(
-            investidoOriginal,
-            item.currency || "BRL",
-            Number(item.current_exchange_rate || 1)
-          );
-
-          const atual = converterParaReal(
-            atualOriginal,
-            item.currency || "BRL",
-            Number(item.current_exchange_rate || 1)
-          );
-
-          const resultadoOriginal =
-            atualOriginal - investidoOriginal;
 
           const resultado = atual - investido;
 
           const percentual =
-            investidoOriginal > 0
-              ? (resultadoOriginal / investidoOriginal) * 100
-              : 0;
+            investido > 0 ? (resultado / investido) * 100 : 0;
 
           const positivo = resultado >= 0;
 
@@ -672,27 +458,18 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                 />
 
                 <Info
-                  titulo="Valor investido"
-                  valor={dinheiro(
-                    investidoOriginal,
-                    item.currency || "BRL"
-                  )}
+                  titulo="Preço médio"
+                  valor={moeda(Number(item.average_price))}
                 />
 
                 <Info
                   titulo="Preço atual"
-                  valor={dinheiro(
-                    Number(item.current_price),
-                    item.currency || "BRL"
-                  )}
+                  valor={moeda(Number(item.current_price))}
                 />
 
                 <Info
-                  titulo="Patrimônio atual"
-                  valor={dinheiro(
-                    atualOriginal,
-                    item.currency || "BRL"
-                  )}
+                  titulo="Patrimônio"
+                  valor={moeda(atual)}
                 />
               </div>
 
@@ -717,10 +494,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                         : "block text-sm font-black text-red-400"
                     }
                   >
-                    {dinheiro(
-                      resultadoOriginal,
-                      item.currency || "BRL"
-                    )}
+                    {moeda(resultado)}
                   </strong>
 
                   <span
@@ -877,46 +651,6 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                   onChange={setInstitution}
                 />
 
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-300">
-                    Moeda do investimento
-                  </span>
-
-                  <select
-                    value={currency}
-                    
-                    onChange={(event) =>
-                      trocarMoedaInvestimento(event.target.value)
-                    }
-                    className="min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-500"
-                  >
-                    <option value="BRL">
-                      Real brasileiro (BRL)
-                    </option>
-
-                    <option value="USD">
-                      Dólar americano (USD)
-                    </option>
-                  </select>
-                </label>
-
-                {currency === "USD" && (
-                  <Campo
-                    label="Cotação do dólar"
-                    placeholder="Exemplo: 5,10"
-                    value={String(exchangeRate).replace(".", ",")}
-                    onChange={(valor) => {
-                      const cotacao = numero(valor);
-
-                      setExchangeRate(
-                        Number.isFinite(cotacao) && cotacao > 0
-                          ? cotacao
-                          : 1
-                      );
-                    }}
-                  />
-                )}
-
                 <Campo
                   label="Quantidade"
                   placeholder="Exemplo: 100"
@@ -969,7 +703,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                       <strong className="mt-1 block text-sm text-emerald-400">
                         {currency === "BRL"
                           ? "Não se aplica"
-                          : dinheiro(exchangeRate)}
+                          : moeda(exchangeRate)}
                       </strong>
                     </div>
 
@@ -979,12 +713,7 @@ const [searchResults, setSearchResults] = useState<MarketSearchResult[]>([]);
                       </span>
 
                       <strong className="mt-1 block text-sm text-blue-400">
-                        {dinheiro(
-                          currency === "USD"
-                            ? numero(currentPrice || "0") *
-                                exchangeRate
-                            : numero(currentPrice || "0")
-                        )}
+                        {moeda(priceBrl)}
                       </strong>
                     </div>
                   </div>

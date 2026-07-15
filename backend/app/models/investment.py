@@ -1,6 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import relationship
 
 from app.database.database import Base
@@ -21,7 +28,6 @@ class Investment(Base):
     current_price = Column(Float, default=0, nullable=False)
 
     color = Column(String, default="#2563eb", nullable=False)
-
 
     asset_type = Column(String, default="stock")
     exchange = Column(String, default="")

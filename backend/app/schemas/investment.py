@@ -8,10 +8,17 @@ class InvestmentBase(BaseModel):
     ticker: str = ""
     category: str = "Outros"
     institution: str = ""
+
     quantity: float = Field(default=0, ge=0)
     average_price: float = Field(default=0, ge=0)
     current_price: float = Field(default=0, ge=0)
+
     color: str = "#2563eb"
+
+    asset_type: str = "stock"
+    exchange: str = ""
+    currency: str = "BRL"
+    current_exchange_rate: float = Field(default=1, gt=0)
 
 
 class InvestmentCreate(InvestmentBase):

@@ -1,7 +1,10 @@
 import requests
 import yfinance as yf
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+
+from app.services.coingecko_service import cotacao_cripto
+
 
 router = APIRouter(
     prefix="/market",
@@ -9,53 +12,65 @@ router = APIRouter(
 )
 
 
+def cotacao_dolar() -> float:
+    resposta = requests.get(
+        "https://economia.awesomeapi.com.br/json/last/USD-BRL",
+        timeout=10,
+    )
+
+    resposta.raise_for_status()
+
+    return float(resposta.json()["USDBRL"]["bid"])
+
+
 @router.get("/asset/{ticker}")
 def asset(ticker: str):
-
-    ticker = ticker.upper()
+    simbolo = ticker.upper().strip()
 
     try:
-
-        ativo = yf.Ticker(ticker)
-
+        ativo = yf.Ticker(simbolo)
         info = ativo.fast_info
-
-        moeda = info.get("currency", "USD")
-
         preco = info.get("lastPrice")
 
-        nome = ticker
+        if preco is not None:
+            moeda = info.get("currency", "USD")
+            cambio = cotacao_dolar()
 
-        try:
-            nome = ativo.info.get("longName", ticker)
-        except Exception:
-            pass
+            try:
+                nome = ativo.info.get("longName", simbolo)
+            except Exception:
+                nome = simbolo
 
-        dolar = requests.get(
-            "https://economia.awesomeapi.com.br/json/last/USD-BRL",
-            timeout=10,
-        ).json()
+            preco_brl = (
+                float(preco)
+                if moeda == "BRL"
+                else float(preco) * cambio
+            )
 
-        cambio = float(
-            dolar["USDBRL"]["bid"]
-        )
+            return {
+                "ticker": simbolo,
+                "name": nome,
+                "currency": moeda,
+                "price": round(float(preco), 8),
+                "exchange_rate": round(cambio, 4),
+                "price_brl": round(preco_brl, 8),
+                "exchange": str(info.get("exchange", "")),
+                "source": "yahoo",
+                "change_24h": 0,
+            }
 
-        if moeda == "BRL":
-            preco_brl = preco
-        else:
-            preco_brl = preco * cambio
+    except Exception:
+        pass
 
-        return {
-            "ticker": ticker,
-            "name": nome,
-            "currency": moeda,
-            "price": round(preco,2),
-            "exchange_rate": round(cambio,4),
-            "price_brl": round(preco_brl,2)
-        }
+    try:
+        cripto = cotacao_cripto(simbolo)
 
-    except Exception as e:
+        if cripto:
+            return cripto
+    except Exception:
+        pass
 
-        return {
-            "error": str(e)
-        }
+    raise HTTPException(
+        status_code=404,
+        detail="Não foi possível localizar a cotação desse ativo.",
+    )
